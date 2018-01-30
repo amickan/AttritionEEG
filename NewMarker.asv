@@ -25,7 +25,7 @@ Error = E{10};
 fclose(fid);
 
 % compute the new marker
-for i=1:140
+for i=1:length()
     if Known{i}=='1' && Unknown{i}=='1'
         tempMarker='1';
     else
