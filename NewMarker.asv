@@ -91,8 +91,8 @@ end
 
 % convert the new error vector back into the order of the original error
 % vector
-[~,L] = ismember(Item3, [Item3sorted;Item32sorted]);
-L(71:140) = L(71:140)+70
+[Lia,L] = ismember(Item3, [Item3sorted;Item32sorted]);
+L
 NewError = NewError(L);
 
 % safe the new finaltest file with an additional column
