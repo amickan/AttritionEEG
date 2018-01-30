@@ -71,8 +71,10 @@ fclose(fid);
 [~,Item1sort]=sort(Item1);
 [~,Item2sort]=sort(Item2);
 Item31 = Item3(1:70);
-[~,Item31sort]=sort(Item31);
-Item3sort = [Item31sort;(Item31sort+70)];
+[Item3sorted,Item31sort]=sort(Item31);
+Item312 = Item3(71:140);
+[Item32sorted,Item312sort]=sort(Item312);
+Item3sort = [Item31sort;Item312sort];
 
 Knowncopy=Known(Item1sort);
 Unknowncopy=Unknown(Item2sort);
@@ -87,16 +89,21 @@ for k=1:70
     end
 end
 
+% convert the new error vector back into the order of the original error
+% vector
+[Lia,L] = ismember(Item3, [Item3sorted;Item32sorted]);
+NewError = NewError(L);
+
 % safe the new finaltest file with an additional column
 curdir = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\', int2str(pNumber),'\Day 3\', int2str(pNumber),'_FinalTest');
 cd(curdir);
 outFileName=strcat(int2str(pNumber),'_FinalTest_new.txt');
 fid = fopen(outFileName,'w+');
-CC = {headline21,'NewError'};
+CC = {headline21,'NewError','\r\n'};
 headline21 = strjoin(CC, '\t');
 fprintf(fid,headline21);
 for i=1:140
-    fprintf(fid, '%d\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\r\n', Subj(i),Block(i),Trial(i),Item3{i} ,LbNL{i},label{i} ,Cond(i), VoiceOnset(i) , Marker(i) ,Error(i) ,PhonCorr(i),PhonIncorr(i) ,Produced{i},TypeError(i),NewError{i});
+    fprintf(fid, '%d\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%d\r\n', Subj(i),Block(i),Trial(i),Item3{i} ,LbNL{i},label{i} ,Cond(i), VoiceOnset(i) , Marker(i) ,Error(i) ,PhonCorr(i),PhonIncorr(i) ,Produced{i},TypeError(i),NewError(i));
 end
 fclose(fid);
 
