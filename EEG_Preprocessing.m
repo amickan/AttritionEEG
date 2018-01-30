@@ -1,6 +1,6 @@
 %%% EEG analysis script 14/11/2017 %%%
 addpath('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\301\Day 3\EEG - Copy')
-%%
+
 %read continuous data
 cfg = [];
 cfg.dataset     = '301.vhdr';
