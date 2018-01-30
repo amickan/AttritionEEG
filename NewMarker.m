@@ -25,9 +25,22 @@ curdir = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\', int2str(pNumber),'\
 cd(curdir);
 FinalTestFileName=strcat(int2str(pNumber),'_FinalTest.txt');
 fid = fopen(FinalTestFileName);
-E = textscan(fid, '%d%d%s%s%s%d%d%d%d%d%d%s%d', 'headerlines',1); % 13 columns and 1 headerline
+headline21=fgets(fid); % read and safe the header of the file for later
+E = textscan(fid, '%d%d%d%s%s%s%d%d%d%d%d%d%s%d'); % 14 columns and 1 headerline
+Subj = E{1};
+Block = E{2};
+Trial = E{3};
 Item3 = E{4};
+LbNL = E{5};
+label = E{6};
+Cond = E{7};
+VoiceOnset = E{8};
+Marker = E{9};
 Error = E{10};
+PhonCorr = E{11};
+PhonIncorr = E{12};
+Produced = E{13};
+TypeError = E{14};
 fclose(fid);
 
 % read the old marker file
@@ -55,17 +68,40 @@ Channel=F{5};
 fclose(fid);
 
 % sort all three vectors to have the same order (based on the Items order)
+[~,Item1sort]=sort(Item1);
+[~,Item2sort]=sort(Item2);
+Item31 = Item3(1:70);
+[~,Item31sort]=sort(Item31);
+Item3sort = [Item31sort;(Item31sort+70)];
 
-% compute the new FinalTest file 
-for i=1:140
-    if Known{k}=='1' && Unknown{k}=='1'
-        ErrorNew = '1';
-    else
-        ErrorNew = '0';
+Knowncopy=Known(Item1sort);
+Unknowncopy=Unknown(Item2sort);
+Errorcopy=Error(Item3sort);
+
+% compute the new FinalTest error column 
+NewError = Errorcopy;
+for k=1:70
+    if Knowncopy(k)=='1' || Unknowncopy(k)=='1'
+        NewError(k) = '1';
+        NewError(k+70)= '1';
     end
 end
 
+% safe the new finaltest file with an additional column
+curdir = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\', int2str(pNumber),'\Day 3\', int2str(pNumber),'_FinalTest');
+cd(curdir);
+outFileName=strcat(int2str(pNumber),'_FinalTest_new.txt');
+fid = fopen(outFileName,'w+');
+CC = {headline21,'NewError'};
+headline21 = strjoin(CC, '\t');
+fprintf(fid,headline21);
+for i=1:140
+    fprintf(fid, '%d\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\r\n', Subj(i),Block(i),Trial(i),Item3{i} ,LbNL{i},label{i} ,Cond(i), VoiceOnset(i) , Marker(i) ,Error(i) ,PhonCorr(i),PhonIncorr(i) ,Produced{i},TypeError(i),NewError{i});
+end
+fclose(fid);
+
 % compute the new marker
+% this does not yet work!
 for i=1:length(OldMarker)
     % somehow jump the first I don't know how many lines that do not belong
     % to the final test
