@@ -85,7 +85,9 @@ cfg.lpfilter            = 'yes';
 cfg.hpfilter            = 'yes';
 cfg.lpfreq              = 30;
 cfg.hpfreq              = 0.1; 
-data_eeg                = ft_preprocessing(cfg);
+data_eeg                = ft_preprocessing(cfg, data_eeg); %data_eeg or data_all?
+% error message: Calculated filter coefficients have poles on or outside the unit circle and will not be stable. Try
+% a higher cutoff frequency or a different type/order of filter.
 
 %% 
 %trial segmentation
@@ -109,19 +111,10 @@ cfg_vis_condB            = ft_definetrial(cfg);
 %%here sort out something to select only trial with no mistakes
 
 %cut the trials out of the continuous data segment
-data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_eeg);
-data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_eeg);
+data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_all);
+data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_all);
 
 %% visual inspection
-
-%manual artifact rejection
-%browse throgh the data trial by trial %doesn't work
-cfg          = [];
-cfg.method   = 'trial'; %or trial or channel
-%cfg.layout   = 'actiCAP_64ch_Standard2.mat';
-cfg.alim     = 5e-5; 
-dummy        = ft_rejectvisual(cfg,data_eeg);
-
 %visual inspection ?
 cfg          = [];
 cfg.viewmode = 'vertical';
