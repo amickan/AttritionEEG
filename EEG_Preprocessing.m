@@ -85,18 +85,18 @@ cfg.lpfilter            = 'yes';
 cfg.hpfilter            = 'yes';
 cfg.lpfreq              = 30;
 cfg.hpfreq              = 0.1; 
-data_eeg                = ft_preprocessing(cfg);
+data_eeg                = ft_preprocessing(cfg, data_all); % definitely use data_all here
 
 %% 
 %trial segmentation
 cfg = [];
-cfg.dataset             = '301.vhdr';
+cfg.dataset             = data_eeg; %'301.vhdr'; %% I'm not sure, but from a quick look I think you need to be using the preprocessed data for this. can you try whether this works?
 cfg.trialdef.eventtype = '?';
 dummy                   = ft_definetrial(cfg);
 
 %select data of two conditions 
 cfg = [];
-cfg.dataset             = '301.vhdr';
+cfg.dataset             = data_eeg; %'301.vhdr';
 cfg.trialdef.eventtype = 'Stimulus';
 cfg.trialdef.prestim        = 1;
 cfg.trialdef.poststim       = 2;
@@ -107,8 +107,11 @@ cfg.trialdef.eventvalue = {'S209', 'S219'};
 cfg_vis_condB            = ft_definetrial(cfg);
 
 %%here sort out something to select only trial with no mistakes
+% check the other script on Github I adjusted a while ago 
 
-%cut the trials out of the continuous data segment
+%cut the trials out of the continuous data segment %%% I've never seen this
+%done, does this work properly? i.e. are you sure this is doing what you
+%think it is doing?
 data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_eeg);
 data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_eeg);
 

@@ -85,20 +85,18 @@ cfg.lpfilter            = 'yes';
 cfg.hpfilter            = 'yes';
 cfg.lpfreq              = 30;
 cfg.hpfreq              = 0.1; 
-data_eeg                = ft_preprocessing(cfg, data_eeg); %data_eeg or data_all?
-% error message: Calculated filter coefficients have poles on or outside the unit circle and will not be stable. Try
-% a higher cutoff frequency or a different type/order of filter.
+data_eeg                = ft_preprocessing(cfg, data_all); % definitely use data_all here
 
 %% 
 %trial segmentation
 cfg = [];
-cfg.dataset             = '301.vhdr';
+cfg.dataset             = data_eeg; %'301.vhdr'; %% I'm not sure, but from a quick look I think you need to be using the preprocessed data for this. can you try whether this works?
 cfg.trialdef.eventtype = '?';
 dummy                   = ft_definetrial(cfg);
 
 %select data of two conditions 
 cfg = [];
-cfg.dataset             = '301.vhdr';
+cfg.dataset             = data_eeg; %'301.vhdr';
 cfg.trialdef.eventtype = 'Stimulus';
 cfg.trialdef.prestim        = 1;
 cfg.trialdef.poststim       = 2;
@@ -111,10 +109,19 @@ cfg_vis_condB            = ft_definetrial(cfg);
 %%here sort out something to select only trial with no mistakes
 
 %cut the trials out of the continuous data segment
-data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_all);
-data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_all);
+data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_eeg);
+data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_eeg);
 
 %% visual inspection
+
+%manual artifact rejection
+%browse throgh the data trial by trial %doesn't work
+cfg          = [];
+cfg.method   = 'trial'; %or trial or channel
+%cfg.layout   = 'actiCAP_64ch_Standard2.mat';
+cfg.alim     = 5e-5; 
+dummy        = ft_rejectvisual(cfg,data_eeg);
+
 %visual inspection ?
 cfg          = [];
 cfg.viewmode = 'vertical';
