@@ -60,7 +60,7 @@ cfg = [];
 cfg.dataset = '301.vhdr';
 cfg.channel = {'LipUp', 'LipLow'}; %is there a difference in which above/below put before?
 cfg.reref = 'yes';
-cfg.refchannel = 'LipLow'  %%here I'm not 100% sure if I should put LipUp
+cfg.refchannel = 'LipUp'  %%here I'm not 100% sure if I should put LipUp
 data_lips = ft_preprocessing(cfg);
 data_lips.label{2} = 'LIPS'; %rename/discard dummy channe
 cfg = [];
@@ -79,8 +79,7 @@ data_all = ft_appenddata(cfg, data_eeg, data_eogh, data_eogv, data_lips);
 
 %% filtering from continuous data
 %filtering - not working
-cfg = [];
-cfg.dataset             = '301.vhdr';
+
 cfg.lpfilter            = 'yes';
 cfg.hpfilter            = 'yes';
 cfg.lpfreq              = 30;
@@ -89,14 +88,14 @@ data_eeg                = ft_preprocessing(cfg, data_all); % definitely use data
 
 %% 
 %trial segmentation
-cfg = [];
-cfg.dataset             = data_eeg; %'301.vhdr'; %% I'm not sure, but from a quick look I think you need to be using the preprocessed data for this. can you try whether this works?
-cfg.trialdef.eventtype = '?';
-dummy                   = ft_definetrial(cfg);
+% cfg = [];
+% cfg.dataset             = '301.vhdr'; %% I'm not sure, but from a quick look I think you need to be using the preprocessed data for this. can you try whether this works?
+% cfg.trialdef.eventtype = '?';
+% dummy                   = ft_definetrial(cfg);
 
 %select data of two conditions 
 cfg = [];
-cfg.dataset             = data_eeg; %'301.vhdr';
+cfg.dataset             = '301.vhdr';
 cfg.trialdef.eventtype = 'Stimulus';
 cfg.trialdef.prestim        = 1;
 cfg.trialdef.poststim       = 2;
@@ -107,61 +106,78 @@ cfg.trialdef.eventvalue = {'S209', 'S219'};
 cfg_vis_condB            = ft_definetrial(cfg);
 
 %%here sort out something to select only trial with no mistakes
+% check the other script on Github I adjusted a while ago 
 
-%cut the trials out of the continuous data segment
+%cut the trials out of the continuous data segment %%% I've never seen this
+%done, does this work properly? i.e. are you sure this is doing what you
+%think it is doing?
 data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_eeg);
 data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_eeg);
 
 %% visual inspection
 
 %manual artifact rejection
-%browse throgh the data trial by trial %doesn't work
-cfg          = [];
-cfg.method   = 'trial'; %or trial or channel
-%cfg.layout   = 'actiCAP_64ch_Standard2.mat';
-cfg.alim     = 5e-5; 
-dummy        = ft_rejectvisual(cfg,data_eeg);
-
-%visual inspection ?
-cfg          = [];
-cfg.viewmode = 'vertical';
-ft_databrowser(cfg, data_all);
-
-%visual inspection of visual channels, to mark them as good or bad
+%browse throgh the data trial by trial 
+%discard trials when lips channel shows words
 cfg        = [];
-cfg.method = 'channel';
-ft_rejectvisual(cfg, data_all)
-%channel layout?? (the tutorial uses an existing layout)
+cfg.method = 'trial'; %or channel or summary
+ft_rejectvisual(cfg, data_vis_condA)
+
+%same condB
+cfg        = [];
+cfg.method = 'trial';
+ft_rejectvisual(cfg, data_vis_condB)
+
+% %visual inspection ?
+% cfg          = [];
+% cfg.viewmode = 'vertical';
+% ft_databrowser(cfg, data_all);
+
+%summary: discard trials x channel with abnormal var
+cfg = [];
+cfg.method   = 'summary';
+cfg.layout   = 'actiCAP_64ch_Standard2.mat';   % this allows for plotting individual trials
+   % do not show EOG channels
+data_cleanA   = ft_rejectvisual(cfg, data_vis_condA);
 
 cfg = [];
 cfg.method   = 'summary';
 cfg.layout   = 'actiCAP_64ch_Standard2.mat';   % this allows for plotting individual trials
-cfg.channel  = [1:60];    % do not show EOG channels
-data_clean   = ft_rejectvisual(cfg, data_all);
+   % do not show EOG channels
+data_cleanB   = ft_rejectvisual(cfg, data_vis_condB);
 
-disp(data_clean.trialinfo')
+%last visual inspection
+cfg = [];
+cfg.viewmode = 'vertical';
+ft_databrowser(cfg, data_cleanA);
 
+%last visual inspection
+cfg = [];
+cfg.viewmode = 'vertical';
+ft_databrowser(cfg, data_cleanB);
 
+% disp(data_clean.trialinfo')
 
 % remove the trials that have artifacts from the trl
-cfg.trl([15, 36, 39, 42, 43, 49, 50, 81, 82, 84],:) = []; 
+% cfg.trl([15, 36, 39, 42, 43, 49, 50, 81, 82, 84],:) = []; 
 %% ERPs
 %computing and plotting ERPs
+
 % use ft_timelockanalysis to compute the ERPs 
 % Visualize the results. You can plot the ERP of one channel with ft_singleplotER or several channels with ft_multiplotER, or by creating a topographic plot for a specified time- interval with ft_topoplotER
-% cfg = [];
-% cfg.trials = find(cfg_vis_condA);
-% task1 = ft_timelockanalysis(cfg, data_all);
+cfg = [];
+cfg.keeptrials='yes';
+task1 = ft_timelockanalysis(cfg, data_vis_condA);
 % 
-% cfg = [];
-% cfg.trials = find(cfg_vis_condB);
-% task2 = ft_timelockanalysis(cfg, data_all);
+cfg = [];
+cfg.keeptrials='yes';
+task2 = ft_timelockanalysis(cfg, data_vis_condB);
 % 
-% cfg = [];
-% cfg.layout = 'mpi_customized_acticap64.mat';
-% cfg.interactive = 'yes';
-% cfg.showoutline = 'yes';
-% ft_multiplotER(cfg, task1, task2)
+cfg = [];
+cfg.layout = 'actiCAP_64ch_Standard2.mat';
+cfg.interactive = 'yes';
+cfg.showoutline = 'yes';
+ft_multiplotER(cfg, task1, task2)
 
 %averaging trials
 
