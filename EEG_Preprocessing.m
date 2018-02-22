@@ -148,7 +148,11 @@ cfg.artfctdef.clip.amplthreshold = 0; %minimum amplitude difference in consecuti
 
 % Eye-blinks - somehow this finds a huge amount fo artifacts, something is
 % wrong with settings
-cfg.artfctdef.eog.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+cfg.artfctdef.eog.channel = [66,67];
+cfg.artfctdef.eog.cutoff      = 4;
+cfg.artfctdef.eog.trlpadding  = 0;
+cfg.artfctdef.eog.artpadding  = 0.1;
+cfg.artfctdef.eog.fltpadding  = 0;
 [cfg, artifact_eog] = ft_artifact_eog(cfg, data_finaltestcond1);
 
 % Muscle artifacts - somehow this fings a lot of artifacts, something is
