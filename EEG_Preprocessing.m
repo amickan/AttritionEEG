@@ -1,6 +1,7 @@
 %%% EEG analysis script 14/11/2017 %%%
-addpath('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\301\Day3\EEG - Copy')
-addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
+%addpath('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\301\Day3\EEG - Copy')
+%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
+cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
 
 %read continuous data
 cfg = [];
@@ -8,23 +9,23 @@ cfg.dataset     = '301.vhdr';
 data_org        = ft_preprocessing(cfg)
 
 %rereferencing
-cfg = [];
-cfg.dataset     = '301.vhdr';
 cfg.reref       = 'yes';
 cfg.channel     = 'all';
-cfg.implicitref = 'TP9';            % the implicit (non-recorded) reference channel is added to the data representation
-cfg.refchannel     = {'LinkMast', 'TP9'}; % the average of these channels is used as the new reference
+cfg.implicitref = 'Ref';            % the implicit (non-recorded) reference channel is added to the data representation
+cfg.refchannel     = {'LinkMast', 'Ref'}; % the average of these channels is used as the new reference
 data_eeg        = ft_preprocessing(cfg);
 
-%this is for discarding a channel after re-referencing, but I'm not sure how to edit it 
+%this is for discarding a channel after re-referencing, we don't need to do
+%this, but good to have it for now
 %cfg = [];
 %cfg.channel     = [1:61 65];                      % keep channels 1 to 61 and the newly inserted M1 channel
 %data_eeg        = ft_preprocessing(cfg, data_eeg);
 
 %this is to look at three channels
-plot(data_eeg.time{1}, data_eeg.trial{1}(1:3,:));
-legend(data_eeg.label(1:3));
+%plot(data_eeg.time{1}, data_eeg.trial{1}(1:3,:));
+%legend(data_eeg.label(1:3));
 
+%% Horizontal EOG
 %reading horizontal EOGH
 cfg = [];
 cfg.dataset = '301.vhdr';
@@ -32,7 +33,6 @@ cfg.channel = {'EOGleft', 'EOGright'};
 cfg.reref = 'yes';
 cfg.refchannel = 'EOGleft';
 data_eogh = ft_preprocessing(cfg);
-
 %checking that EOGleft was referenced to itself
 figure
 plot(data_eogh.time{1}, data_eogh.trial{1}(1,:));
@@ -40,144 +40,126 @@ hold on
 plot(data_eogh.time{1}, data_eogh.trial{1}(2,:),'g'); 
 legend({'EOGleft' 'EOGright'}); 
 %rename/discard dummy channel with the next lines
-data_eogh.label{2} = 'EOGH';
+data_eogh.label{1} = 'EOGH'; % if you check, channel number 2 has only 0s in the data, so that can't be right, so I changed the code to 1, not sure why this is different on the website
 cfg = [];
 cfg.channel = 'EOGH';
 data_eogh   = ft_preprocessing(cfg, data_eogh); % nothing will be done, only the selection of the interesting channel
-%reading vertical EOGH
+
+%% Vertical EOG 
+%reading vertical EOGV
 cfg = [];
 cfg.dataset = '301.vhdr';
 cfg.channel = {'EOGabove', 'EOGbelow'}; %is there a difference in which above/below put before?
 cfg.reref = 'yes';
-cfg.refchannel = 'EOGabove'
+cfg.refchannel = 'EOGabove';
 data_eogv = ft_preprocessing(cfg);
+%checking that EOGabove was referenced to itself
+figure
+plot(data_eogv.time{1}, data_eogv.trial{1}(1,:));
+hold on
+plot(data_eogv.time{1}, data_eogv.trial{1}(2,:),'g'); 
+legend({'EOGabove' 'EOGbelow'}); 
+%rename/discard dummy channel with the next lines
 data_eogv.label{2} = 'EOGV';
 cfg = [];
 cfg.channel = 'EOGV';
 data_eogv = ft_preprocessing(cfg, data_eogv); % nothing will be done, only the selection of the interesting channel
+
+%% Lips 
 %reading lips
 cfg = [];
 cfg.dataset = '301.vhdr';
 cfg.channel = {'LipUp', 'LipLow'}; %is there a difference in which above/below put before?
 cfg.reref = 'yes';
-cfg.refchannel = 'LipUp'  %%here I'm not 100% sure if I should put LipUp
+cfg.refchannel = 'LipUp';  %%here I'm not 100% sure if I should put LipUp
 data_lips = ft_preprocessing(cfg);
-data_lips.label{2} = 'LIPS'; %rename/discard dummy channe
-cfg = [];
-cfg.channel = 'LIPS';
-data_lips = ft_preprocessing(cfg, data_lips); % nothing will be done, only the selection of the interesting channel
-%checking lips --doesn't work
+%checking that LipUp was referenced to itself
 figure
 plot(data_lips.time{1}, data_lips.trial{1}(1,:));
 hold on
 plot(data_lips.time{1}, data_lips.trial{1}(2,:),'g'); 
 legend({'LipUp' 'LipLow'}); 
+%rename/discard dummy channel
+data_lips.label{1} = 'LIPS'; % again I needed to change the channel number here
+cfg = [];
+cfg.channel = 'LIPS';
+data_lips = ft_preprocessing(cfg, data_lips); % nothing will be done, only the selection of the interesting channel
 
-%combination of a single representation of using
+%% combination of a single representation of using
 cfg = [];
 data_all = ft_appenddata(cfg, data_eeg, data_eogh, data_eogv, data_lips);
 
 %% filtering from continuous data
-%filtering - not working
-
 cfg.lpfilter            = 'yes';
-cfg.hpfilter            = 'yes';
-cfg.lpfreq              = 30;
-cfg.hpfreq              = 0.1; 
-data_eeg                = ft_preprocessing(cfg, data_all); % definitely use data_all here
+cfg.lpfreq              = 50;
+cfg.hpfilter            = 'no';
+%cfg.hpfreq              = 0.1; 
+data_filtered           = ft_preprocessing(cfg, data_all); 
 
-%% 
-%trial segmentation
+%% trial segmentation
 % cfg = [];
-% cfg.dataset             = '301.vhdr'; %% I'm not sure, but from a quick look I think you need to be using the preprocessed data for this. can you try whether this works?
+% cfg.dataset             = '301.vhdr';
 % cfg.trialdef.eventtype = '?';
 % dummy                   = ft_definetrial(cfg);
 
-%select data of two conditions 
+% select data of two conditions and baseline correct
 cfg = [];
-cfg.dataset             = '301.vhdr';
-cfg.trialdef.eventtype = 'Stimulus';
-cfg.trialdef.prestim        = 1;
-cfg.trialdef.poststim       = 2;
-cfg.trialdef.eventvalue = {'S208', 'S218'};
-cfg_vis_condA          = ft_definetrial(cfg);
-
-cfg.trialdef.eventvalue = {'S209', 'S219'};
-cfg_vis_condB            = ft_definetrial(cfg);
-
-%%here sort out something to select only trial with no mistakes
-% check the other script on Github I adjusted a while ago 
-
-% Baseline-correction options - not sure how to apply it
+cfg.dataset      = '301.vhdr';
+cfg.headerfile   = '301.vhdr'; % this needs to be specified, otherwise it doesn't work
+% Baseline correction criteria
 cfg.demean = 'yes';
 cfg.baselinewindow = [-0.5 0];
-data = ft_definetrial(cfg);
+% trial selection criteria general
+cfg.trialfun = 'correctonly_trialfun'; % this is to only select correct trials 
+cfg.trialdef.prestim    = 0.5; % time before marker in seconds
+cfg.trialdef.poststim   = 2; % time after marker in seconds
+cfg.marker2 = 'S205'; % correct / incorrect response marker 
+% trial selection crtieria for condition 1
+cfg.marker1 = 'S208'; % for the markers that only have two numbers you need to insert a space
+cfg_finaltestcond1    = ft_definetrial(cfg);
+% trial selection crtieria for condition 2
+cfg.marker1 = {'S209'};
+cfg_finaltestcond2    = ft_definetrial(cfg);
 
-%cut the trials out of the continuous data segment %%% I've never seen this
-%done, does this work properly? i.e. are you sure this is doing what you
-%think it is doing?
-data_vis_condA = ft_redefinetrial(cfg_vis_condA, data_eeg);
-data_vis_condB   = ft_redefinetrial(cfg_vis_condB,   data_eeg);
+%cut the trials out of the continuous data segment 
+data_finaltestcond1 = ft_redefinetrial(cfg_finaltestcond1, data_filtered);
+data_finaltestcond2    = ft_redefinetrial(cfg_finaltestcond2, data_filtered);
 
-%% visual inspection
+%% Artifact rejection 
+% automatic artifact rejection
 
-%manual artifact rejection
-%browse throgh the data trial by trial 
-%discard trials when lips channel shows words
-cfg        = [];
-cfg.method = 'trial'; %or channel or summary
-ft_rejectvisual(cfg, data_vis_condA)
-
-%same condB
-cfg        = [];
-cfg.method = 'trial';
-ft_rejectvisual(cfg, data_vis_condB)
-
-% %visual inspection ?
-% cfg          = [];
-% cfg.viewmode = 'vertical';
-% ft_databrowser(cfg, data_all);
-
-%summary: discard trials x channel with abnormal var
-cfg = [];
-cfg.method   = 'summary';
-cfg.layout   = 'actiCAP_64ch_Standard2.mat';   % this allows for plotting individual trials
-   % do not show EOG channels
-data_cleanA   = ft_rejectvisual(cfg, data_vis_condA);
-
-cfg = [];
-cfg.method   = 'summary';
-cfg.layout   = 'actiCAP_64ch_Standard2.mat';   % this allows for plotting individual trials
-   % do not show EOG channels
-data_cleanB   = ft_rejectvisual(cfg, data_vis_condB);
-
-%last visual inspection
-cfg = [];
+% manual artifact rejection by visual inspection of each trial
+% Anne: I much prefer the databrowser view
+% condition 1
+cfg             = [];
 cfg.viewmode = 'vertical';
-ft_databrowser(cfg, data_cleanA);
+cfg.selectmode              = 'markartifact';
+cfg = ft_databrowser(cfg, data_finaltestcond1); %% double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
+cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
+data_clean_cond1 = ft_rejectartifact(cfg, data_clean_cond1);
 
-%last visual inspection
-cfg = [];
-cfg.viewmode = 'vertical';
-ft_databrowser(cfg, data_cleanB);
-
-% disp(data_clean.trialinfo')
+% condition 2
+cfg = ft_databrowser(cfg, data_finaltestcond2);
+cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
+data_clean_cond2 = ft_rejectartifact(cfg, data_clean_cond2);
 
 % remove the trials that have artifacts from the trl
+% this is not necessary anymore I think...
 % cfg.trl([15, 36, 39, 42, 43, 49, 50, 81, 82, 84],:) = []; 
+
 %% ERPs
-%computing and plotting ERPs
+% computing and plotting ERPs
 
 % use ft_timelockanalysis to compute the ERPs 
 % Visualize the results. You can plot the ERP of one channel with ft_singleplotER or several channels with ft_multiplotER, or by creating a topographic plot for a specified time- interval with ft_topoplotER
 cfg = [];
 cfg.keeptrials='yes';
 task1 = ft_timelockanalysis(cfg, data_vis_condA);
-% 
+
 cfg = [];
 cfg.keeptrials='yes';
 task2 = ft_timelockanalysis(cfg, data_vis_condB);
-% 
+ 
 cfg = [];
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
 cfg.interactive = 'yes';
