@@ -127,6 +127,34 @@ data_finaltestcond2    = ft_redefinetrial(cfg_finaltestcond2, data_filtered);
 
 %% Artifact rejection 
 % automatic artifact rejection
+% Threshold artifact detection: trials with amplitudes above or below
+% +-100m or with a difference between min and max of more than 150mV
+cfg.continuous = 'no';
+cfg.artfctdef.threshold.channel   = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);  % only non-EOG channels
+cfg.artfctdef.threshold.bpfilter  = 'no';
+cfg.artfctdef.threshold.range     = 150;
+cfg.artfctdef.threshold.min       = -100; 
+cfg.artfctdef.threshold.max       = 100;
+cfg.trl = data_finaltestcond1.cfg.trl;
+[cfg, artifact_threshold] = ft_artifact_threshold(cfg, data_finaltestcond1);
+
+% Clips - flat electrodes / trials 
+%cfg.artfctdef.clip.pretim        = 0.000;  %pre-artifact rejection-interval in seconds
+%cfg.artfctdef.clip.psttim        = 0.000;  %post-artifact rejection-interval in seconds
+cfg.artfctdef.clip.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+cfg.artfctdef.clip.timethreshold = 0.05; %minimum duration in seconds of a datasegment with consecutive identical samples to be considered as 'clipped'
+cfg.artfctdef.clip.amplthreshold = 0; %minimum amplitude difference in consecutive samples to be considered as 'clipped' (default = 0)
+[cfg, artifact_clip] = ft_artifact_clip(cfg, data_finaltestcond1);
+
+% Eye-blinks - somehow this finds a huge amount fo artifacts, something is
+% wrong with settings
+cfg.artfctdef.eog.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+[cfg, artifact_eog] = ft_artifact_eog(cfg, data_finaltestcond1);
+
+% Muscle artifacts - somehow this fings a lot of artifacts, something is
+% wrong with settings
+cfg.artfctdef.muscle.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+[cfg, artifact_muscle] = ft_artifact_muscle(cfg, data_finaltestcond1);
 
 % manual artifact rejection by visual inspection of each trial
 % Anne: I much prefer the databrowser view
