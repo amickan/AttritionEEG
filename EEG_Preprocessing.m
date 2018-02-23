@@ -118,7 +118,7 @@ cfg.marker2 = 'S205'; % correct / incorrect response marker
 cfg.marker1 = 'S208'; % for the markers that only have two numbers you need to insert a space
 cfg_finaltestcond1    = ft_definetrial(cfg);
 % trial selection crtieria for condition 2
-cfg.marker1 = {'S209'};
+cfg.marker1 = 'S209';
 cfg_finaltestcond2    = ft_definetrial(cfg);
 
 %cut the trials out of the continuous data segment 
