@@ -22,9 +22,9 @@ marker2 = cfg.marker2;
 % look for the combination of a trigger "7" followed by a trigger "64" 
 % for each trigger except the last one
 trl = [];
-for j = 1:(length(value)-1)
+for j = 1:(length(value)-2)
   trg1 = value(j);
-  trg2 = value(j+1);
+  trg2 = value(j+2);
   if strcmp(trg1,marker1) && strcmp(trg2,marker2)
     trlbegin = sample(j) + pretrig;       
     trlend   = sample(j) + posttrig;       
