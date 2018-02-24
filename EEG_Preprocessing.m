@@ -1,7 +1,7 @@
 %%% EEG analysis script 14/11/2017 %%%
-%addpath('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\301\Day3\EEG - Copy')
-%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
-cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
+addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final')
+addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
+%cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
 
 %read continuous data
 cfg = [];
@@ -148,12 +148,28 @@ cfg.artfctdef.clip.amplthreshold = 0; %minimum amplitude difference in consecuti
 
 % Eye-blinks - somehow this finds a huge amount fo artifacts, something is
 % wrong with settings
-cfg.artfctdef.eog.channel = [66,67];
+cfg.artfctdef.eog.channel = 'EOGV';
 cfg.artfctdef.eog.cutoff      = 4;
-cfg.artfctdef.eog.trlpadding  = 0;
+cfg.artfctdef.eog.trlpadding  = 0; %0.5?
 cfg.artfctdef.eog.artpadding  = 0.1;
-cfg.artfctdef.eog.fltpadding  = 0;
+cfg.artfctdef.eog.fltpadding  = 0; %0.1
 [cfg, artifact_eog] = ft_artifact_eog(cfg, data_finaltestcond1);
+
+% %alternative eyeblinks (for double checking?)
+%    % EOG
+%    cfg.continuous = 'no'; 
+%    % channel selection, cutoff and padding
+%    cfg.artfctdef.zvalue.channel     = [66,67];
+%    cfg.artfctdef.zvalue.cutoff      = 4;
+%    cfg.artfctdef.zvalue.trlpadding  = 0;
+%    cfg.artfctdef.zvalue.artpadding  = 0.1;
+%    cfg.artfctdef.zvalue.fltpadding  = 0;
+%    % algorithmic parameters
+%    cfg.artfctdef.zvalue.bpfilter   = 'yes';
+%    cfg.artfctdef.zvalue.bpfilttype = 'but';
+%    % feedback
+%    cfg.artfctdef.zvalue.interactive = 'yes';
+%    [cfg, artifact_EOG] = ft_artifact_zvalue(cfg, data_finaltestcond1);
 
 % Muscle artifacts - somehow this fings a lot of artifacts, something is
 % wrong with settings
@@ -168,12 +184,49 @@ cfg.viewmode = 'vertical';
 cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond1); %% double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
-data_clean_cond1 = ft_rejectartifact(cfg, data_clean_cond1);
+data_clean_cond1 = ft_rejectartifact(cfg, data_finaltestcond1); %data_clean_cond1
+
+%automatic artifact rejection for the SECOND condition
+% Threshold artifact detection:
+cfg.continuous = 'no';
+cfg.artfctdef.threshold.channel   = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);  % only non-EOG channels
+cfg.artfctdef.threshold.bpfilter  = 'no';
+cfg.artfctdef.threshold.range     = 150;
+cfg.artfctdef.threshold.min       = -100; 
+cfg.artfctdef.threshold.max       = 100;
+cfg.trl = data_finaltestcond2.cfg.trl;
+[cfg, artifact_threshold2] = ft_artifact_threshold(cfg, data_finaltestcond2);
+
+% Clips - flat electrodes / trials 
+%cfg.artfctdef.clip.pretim        = 0.000;  %pre-artifact rejection-interval in seconds
+%cfg.artfctdef.clip.psttim        = 0.000;  %post-artifact rejection-interval in seconds
+cfg.artfctdef.clip.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+cfg.artfctdef.clip.timethreshold = 0.05; %minimum duration in seconds of a datasegment with consecutive identical samples to be considered as 'clipped'
+cfg.artfctdef.clip.amplthreshold = 0; %minimum amplitude difference in consecutive samples to be considered as 'clipped' (default = 0)
+[cfg, artifact_clip2] = ft_artifact_clip(cfg, data_finaltestcond2);
+
+% Eye-blinks - somehow this finds a huge amount fo artifacts, something is
+% wrong with settings
+cfg.artfctdef.eog.channel = 'EOGV';
+cfg.artfctdef.eog.cutoff      = 4;
+cfg.artfctdef.eog.trlpadding  = 0.5;
+cfg.artfctdef.eog.artpadding  = 0.1;
+cfg.artfctdef.eog.fltpadding  = 0.1;
+[cfg, artifact_eog2] = ft_artifact_eog(cfg, data_finaltestcond2);
+
+
+% Muscle artifacts - somehow this fings a lot of artifacts, something is
+% wrong with settings
+cfg.artfctdef.muscle.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
+[cfg, artifact_muscle2] = ft_artifact_muscle(cfg, data_finaltestcond2);
 
 % condition 2
+cfg             = [];
+cfg.viewmode = 'vertical';
+cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond2);
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
-data_clean_cond2 = ft_rejectartifact(cfg, data_clean_cond2);
+data_clean_cond2 = ft_rejectartifact(cfg, data_finaltestcond1); %data_clean_cond2
 
 % remove the trials that have artifacts from the trl
 % this is not necessary anymore I think...
