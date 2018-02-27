@@ -1,11 +1,9 @@
 %%% EEG analysis script 14/11/2017 %%%
 function Preprocess(pNumber)
-%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final')
-%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
-cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne') % this is where you have the EEG data stored 
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG data stored 
 
 % define files for this participant
-vhdr = strcat(num2str(pNumber), '.vhdr');
+vhdr = strcat(num2str(pNumber), '\Day3\EEG\',num2str(pNumber), '.vhdr');
 cond1out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_cond1');
 cond2out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_cond2');
 
