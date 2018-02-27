@@ -129,6 +129,7 @@ data_finaltestcond2    = ft_redefinetrial(cfg_finaltestcond2, data_filtered);
 % automatic artifact rejection
 % Threshold artifact detection: trials with amplitudes above or below
 % +-100m or with a difference between min and max of more than 150mV
+cfg             = [];
 cfg.continuous = 'no';
 cfg.artfctdef.threshold.channel   = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);  % only non-EOG channels
 cfg.artfctdef.threshold.bpfilter  = 'no';
@@ -179,7 +180,7 @@ cfg.artfctdef.muscle.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
 % manual artifact rejection by visual inspection of each trial
 % Anne: I much prefer the databrowser view
 % condition 1
-cfg             = [];
+
 cfg.viewmode = 'vertical';
 cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond1); %% double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
@@ -188,6 +189,7 @@ data_clean_cond1 = ft_rejectartifact(cfg, data_finaltestcond1); %data_clean_cond
 
 %automatic artifact rejection for the SECOND condition
 % Threshold artifact detection:
+cfg             = [];
 cfg.continuous = 'no';
 cfg.artfctdef.threshold.channel   = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);  % only non-EOG channels
 cfg.artfctdef.threshold.bpfilter  = 'no';
@@ -221,7 +223,7 @@ cfg.artfctdef.muscle.channel = setdiff(1:68, [9,12,17,38,44,49,55,66,67,68]);
 [cfg, artifact_muscle2] = ft_artifact_muscle(cfg, data_finaltestcond2);
 
 % condition 2
-cfg             = [];
+
 cfg.viewmode = 'vertical';
 cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond2);
