@@ -2,7 +2,7 @@
 function Preprocess(pNumber)
 %addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final')
 %addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
-cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
+cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne') % this is where you have the EEG data stored 
 
 % define files for this participant
 vhdr = strcat(num2str(pNumber), '.vhdr');
@@ -219,3 +219,4 @@ c2 = length(data_clean_cond2.trial);
 fid = fopen('TrialCount_PostPreprocessing.txt','a');
 formatSpec = '%d\t%d\t%d\n';
 fprintf(fid,formatSpec,pNumber,c1,c2);
+cd('U:\PhD\EXPERIMENT 2 - EEG\EEG-analysis'); % change this to your Github folder directory 
