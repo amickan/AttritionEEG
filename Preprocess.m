@@ -1,12 +1,18 @@
 %%% EEG analysis script 14/11/2017 %%%
-addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final')
-addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
-%cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
+function Preprocess(pNumber)
+%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final')
+%addpath('C:\Users\Beatrice\Downloads\fieldtrip-20180128\fieldtrip-20180128')
+cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
+
+% define files for this participant
+vhdr = strcat(num2str(pNumber), '.vhdr');
+cond1out = strcat(num2str(pNumber), '_data_clean_cond1');
+cond2out = strcat(num2str(pNumber), '_data_clean_cond2');
 
 %read continuous data
 cfg = [];
-cfg.dataset     = '301.vhdr';
-data_org        = ft_preprocessing(cfg)
+cfg.dataset     = vhdr;
+data_org        = ft_preprocessing(cfg);
 
 %rereferencing
 cfg.reref       = 'yes';
@@ -28,7 +34,7 @@ data_eeg        = ft_preprocessing(cfg);
 %% Horizontal EOG
 %reading horizontal EOGH
 cfg = [];
-cfg.dataset = '301.vhdr';
+cfg.dataset = vhdr;
 cfg.channel = {'EOGleft', 'EOGright'};
 cfg.reref = 'yes';
 cfg.refchannel = 'EOGleft';
@@ -48,7 +54,7 @@ data_eogh   = ft_preprocessing(cfg, data_eogh); % nothing will be done, only the
 %% Vertical EOG 
 %reading vertical EOGV
 cfg = [];
-cfg.dataset = '301.vhdr';
+cfg.dataset = vhdr;
 cfg.channel = {'EOGabove', 'EOGbelow'}; %is there a difference in which above/below put before?
 cfg.reref = 'yes';
 cfg.refchannel = 'EOGabove';
@@ -68,7 +74,7 @@ data_eogv = ft_preprocessing(cfg, data_eogv); % nothing will be done, only the s
 %% Lips 
 %reading lips
 cfg = [];
-cfg.dataset = '301.vhdr';
+cfg.dataset = vhdr ;
 cfg.channel = {'LipUp', 'LipLow'}; %is there a difference in which above/below put before?
 cfg.reref = 'yes';
 cfg.refchannel = 'LipUp';  %%here I'm not 100% sure if I should put LipUp
@@ -104,8 +110,8 @@ data_filtered           = ft_preprocessing(cfg, data_all);
 
 % select data of two conditions and baseline correct
 cfg = [];
-cfg.dataset      = '301.vhdr';
-cfg.headerfile   = '301.vhdr'; % this needs to be specified, otherwise it doesn't work
+cfg.dataset      = vhdr;
+cfg.headerfile   = vhdr; % this needs to be specified, otherwise it doesn't work
 % Baseline correction criteria
 cfg.demean = 'yes';
 cfg.baselinewindow = [-0.5 0];
@@ -163,7 +169,7 @@ cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond1); %% double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
 data_clean_cond1 = ft_rejectartifact(cfg, data_finaltestcond1); %data_clean_cond1
-%save 301_data_clean_cond1
+save data_clean_cond1 cond1out
 
 %automatic artifact rejection for the SECOND condition
 % Threshold artifact detection:
@@ -200,7 +206,7 @@ cfg.selectmode = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond2);
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
 data_clean_cond2 = ft_rejectartifact(cfg, data_finaltestcond2); %data_clean_cond2
-%save 301_data_clean_cond2
+save data_clean_cond2 cond2out 
 
 %% ERPs - this only really makes sense when we have preprocessed all subjects 
 % computing average ERPs
