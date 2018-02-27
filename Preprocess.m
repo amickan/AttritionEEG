@@ -6,8 +6,8 @@ cd('U:\PhD\EXPERIMENT 2 - EEG\Analysis EEG Anne')
 
 % define files for this participant
 vhdr = strcat(num2str(pNumber), '.vhdr');
-cond1out = strcat(num2str(pNumber), '_data_clean_cond1');
-cond2out = strcat(num2str(pNumber), '_data_clean_cond2');
+cond1out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_cond1');
+cond2out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_cond2');
 
 %read continuous data
 cfg = [];
@@ -169,7 +169,7 @@ cfg.selectmode              = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond1); %% double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
 data_clean_cond1 = ft_rejectartifact(cfg, data_finaltestcond1); %data_clean_cond1
-save data_clean_cond1 cond1out
+save(cond1out, 'data_clean_cond1');
 
 %automatic artifact rejection for the SECOND condition
 % Threshold artifact detection:
@@ -206,7 +206,7 @@ cfg.selectmode = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond2);
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
 data_clean_cond2 = ft_rejectartifact(cfg, data_finaltestcond2); %data_clean_cond2
-save data_clean_cond2 cond2out
+save(cond2out, 'data_clean_cond2');
 
 % document how many trials were kept for later analysis
 c1 = length(data_clean_cond1.trial);
