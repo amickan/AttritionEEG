@@ -206,20 +206,12 @@ cfg.selectmode = 'markartifact';
 cfg = ft_databrowser(cfg, data_finaltestcond2);
 cfg.artfctdef.reject  = 'complete'; % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
 data_clean_cond2 = ft_rejectartifact(cfg, data_finaltestcond2); %data_clean_cond2
-save data_clean_cond2 cond2out 
+save data_clean_cond2 cond2out
 
-%% ERPs - this only really makes sense when we have preprocessed all subjects 
-% computing average ERPs
-cfg = [];
-cfg.keeptrials='yes';
-cond1 = ft_timelockanalysis(cfg, data_clean_cond1);
-cond2 = ft_timelockanalysis(cfg, data_clean_cond2);
-% plotting average
-cfg = [];
-cfg.layout = 'actiCAP_64ch_Standard2.mat';
-cfg.interactive = 'yes';
-cfg.showoutline = 'yes';
-cfg.showlabels = 'yes'; 
-cfg.fontsize = 6; 
-% cfg.ylim = [-3e-13 3e-13];
-ft_multiplotER(cfg, cond1, cond2);
+% document how many trials were kept for later analysis
+c1 = length(data_clean_cond1.trial);
+c2 = length(data_clean_cond2.trial);
+
+fid = fopen('TrialCount_PostPreprocessing.txt','a');
+formatSpec = '%d\t%d\t%d\n';
+fprintf(fid,formatSpec,pNumber,c1,c2);
