@@ -1,6 +1,6 @@
 %% Loading all preprocessed data 
 
-subjects = [304,305,306,307,308]; % subjects that should be included in grand average
+subjects = [301]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 cfg = [];
 cfg.keeptrials='yes';
@@ -24,6 +24,8 @@ cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 
 % plotting average
 cfg = [];
+cfg.demean = 'yes'; %baseline
+cfg.baselinewindow = [-0.5 0]; %baseline
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
