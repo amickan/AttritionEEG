@@ -58,7 +58,7 @@ for (i in 1:length(A)){
   
   for (j in 1:nrow(currentFile3)) {
     pos <- which(tolower(as.character(currentFile2$Item )) == tolower(as.character(currentFile3$Item[j])))
-    if (currentFile3$TypeRecognition[j] == 1) {
+    if (currentFile3$Error[j] == 1) {
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
@@ -158,7 +158,7 @@ post$IncorrPer <- round(post$PhonIncorr/post$OrigLen, 2)
 post$Corr <- round(post$CorrPer*post$PhonCorr,0)
 post$Incorr <- round(post$IncorrPer*post$PhonIncorr,0)
 
-model <- glmer(cbind(Corr, Incorr) ~ Condition + FreqCond + FreqCond*Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+model <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model)
 
 # simple Anova
