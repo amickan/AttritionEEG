@@ -15,8 +15,10 @@ for (i in 1:length(A)){
   pNumber = A[i]
   wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_FinalTest", sep="")
   wd2 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day2/",pNumber,"_Posttest_Day2", sep="")
+  wd3 <- paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_Familiarization", sep="")
   infile1 <- paste(pNumber,"Posttest_Day2.txt",sep="_")
   infile2 <- paste(pNumber,"Finaltest.txt",sep="_")
+  infile3 <- paste(pNumber, "IntFamiliarization.txt", sep="_")
   
   setwd(wd2)
   currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
@@ -49,6 +51,18 @@ for (i in 1:length(A)){
     currentFile2[ifelse(is.na(currentFile2$Error),
                         1,currentFile2$Error) == 1,]$VoiceOnset <- NA # this excludes words that were produced with errors after interference from RT analysis
     
+  }
+  
+  setwd(wd3)
+  currentFile3 <- as.data.frame(read.delim(infile3, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  
+  for (j in 1:nrow(currentFile3)) {
+    pos <- which(tolower(as.character(currentFile2$Item )) == tolower(as.character(currentFile3$Item[j])))
+    if (currentFile3$TypeRecognition[j] == 1) {
+      currentFile2$Error[pos] <- NA
+      currentFile2$VoiceOnset[pos] <- NA
+      currentFile2$PhonCorrect[pos]<- NA
+      currentFile2$PhonIncorrect[pos]<-NA}
   }
   
   data_list2[[i]] <- currentFile2
