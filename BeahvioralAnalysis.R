@@ -158,8 +158,13 @@ post$IncorrPer <- round(post$PhonIncorr/post$OrigLen, 2)
 post$Corr <- round(post$CorrPer*post$PhonCorr,0)
 post$Incorr <- round(post$IncorrPer*post$PhonIncorr,0)
 
+# random intercept model
 model <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model)
+
+# random slope model
+model2 <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+summary(model2)
 
 # simple Anova
 anova_ratio <- aov(Ratio ~ Condition, data = post)
