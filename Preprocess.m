@@ -1,7 +1,5 @@
 %%% EEG analysis script 14/11/2017 %%%
 function Preprocess(pNumber)
-clear all;
-clc;
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG data stored 
 
     % define files for this participant
