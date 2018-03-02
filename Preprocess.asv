@@ -208,7 +208,7 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfg.interactive = 'yes';
     %cfg.showoutline = 'yes';
     cfg.showlabels = 'yes'; 
-    %cfg.colorbar = 'yes';
+    cfg.colorbar = 'yes';
     cfg.fontsize = 6; 
     %cfg.ylim = [-10 10];
     ft_multiplotER(cfg, cond1, cond2);
