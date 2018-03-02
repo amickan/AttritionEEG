@@ -1,7 +1,5 @@
 %%% EEG analysis script 14/11/2017 %%%
 function Preprocess(pNumber)
-clear all;
-clc;
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG data stored 
 
     % define files for this participant
@@ -177,14 +175,35 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     % trial selection crtieria for condition 1
     cfg.marker1 = 'S208';                       % for the markers that only have two numbers you need to insert a space
     cfg_finaltestcond1    = ft_definetrial(cfg);
-    
     % trial selection crtieria for condition 2
     cfg.marker1 = 'S209';
     cfg_finaltestcond2    = ft_definetrial(cfg);
-
+    
     %cut the trials out of the continuous data segment 
     data_finaltestcond1 = ft_redefinetrial(cfg_finaltestcond1, data_clean);
     data_finaltestcond2    = ft_redefinetrial(cfg_finaltestcond2, data_clean);
+    
+    % excluding trials from the new segmentation that were rejected by
+    % artifact rejection
+    diff = setdiff(data_finaltestcond1.sampleinfo(:,1),data_clean.sampleinfo(:,1));
+    cond1 = setdiff(data_finaltestcond1.sampleinfo(:,1),diff);
+    for i = 1:length(cond1)
+      num = find(ismember(data_finaltestcond1.sampleinfo(:,1),cond1(i)));
+      cond1(i,2)=data_finaltestcond1.sampleinfo(num,2);
+    end
+    
+    % excluding trials from the new segmentation that were rejected by
+    % artifact rejection
+    diff2 = setdiff(data_finaltestcond2.sampleinfo(:,1),data_clean.sampleinfo(:,1));
+    cond2 = setdiff(data_finaltestcond2.sampleinfo(:,1),diff2);
+    for i = 1:length(cond2)
+      num = find(ismember(data_finaltestcond2.sampleinfo(:,1),cond2(i)));
+      cond2(i,2)=data_finaltestcond2.sampleinfo(num,2);
+    end
+    
+    % replace the sampleinfos for the t
+
+
     save(cond1out, 'data_finaltestcond1');
     save(cond2out, 'data_finaltestcond2');
 
@@ -208,7 +227,7 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfg.interactive = 'yes';
     %cfg.showoutline = 'yes';
     cfg.showlabels = 'yes'; 
-    cfg.colorbar = 'yes';
+    %cfg.colorbar = 'yes';
     cfg.fontsize = 6; 
     %cfg.ylim = [-10 10];
     ft_multiplotER(cfg, cond1, cond2);

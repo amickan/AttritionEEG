@@ -176,9 +176,31 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfg.marker1 = 'S208';                       % for the markers that only have two numbers you need to insert a space
     cfg_finaltestcond1    = ft_definetrial(cfg);
     
+    % excluding trials from the new segmentation that were rejected by
+    % artifact rejection
+    diff = setdiff(cfg_finaltestcond1.trl(:,1),data_clean.sampleinfo(:,1));
+    cond1 = setdiff(cfg_finaltestcond1.trl(:,1),diff);
+    for i = 1:length(cond1)
+      num = find(ismember(cfg_finaltestcond1.trl(:,1),cond1(i)));
+      cond1(i,2)=cfg_finaltestcond1.trl(num,2);
+      cond1(i,3)=cfg_finaltestcond1.trl(num,3);
+    end
+    cfg_finaltestcond1.trl = cond1;
+    
     % trial selection crtieria for condition 2
     cfg.marker1 = 'S209';
     cfg_finaltestcond2    = ft_definetrial(cfg);
+    
+    % excluding trials from the new segmentation that were rejected by
+    % artifact rejection
+    diff2 = setdiff(cfg_finaltestcond2.trl(:,1),data_clean.sampleinfo(:,1));
+    cond2 = setdiff(cfg_finaltestcond2.trl(:,1),diff2);
+    for i = 1:length(cond2)
+      num = find(ismember(cfg_finaltestcond2.trl(:,1),cond2(i)));
+      cond2(i,2)=cfg_finaltestcond2.trl(num,2);
+      cond2(i,3)=cfg_finaltestcond2.trl(num,3);
+    end
+    cfg_finaltestcond2.trl = cond2;
 
     %cut the trials out of the continuous data segment 
     data_finaltestcond1 = ft_redefinetrial(cfg_finaltestcond1, data_clean);

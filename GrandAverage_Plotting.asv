@@ -31,5 +31,5 @@ cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
 cfg.showlabels = 'yes'; 
 cfg.fontsize = 6; 
-cfg.ylim = [-3e-13 3e-13];
+% cfg.ylim = [-3e-13 3e-13];
 ft_multiplotER(cfg, cond1, cond2);
