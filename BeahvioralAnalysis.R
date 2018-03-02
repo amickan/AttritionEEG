@@ -78,6 +78,9 @@ post$Subject_nr <- as.factor(post$Subject_nr)
 post$Condition <- as.factor(post$Condition)
 post$Item <- as.factor(post$Item)
 
+# log-transforming the RTs
+post$RTlog <- log(post$VoiceOnset)
+
 # subset to only the first round of Final test
 post1 <- post[post$Trial_nr<71,]
 
@@ -146,27 +149,46 @@ lenwords <- read.delim("WordsLengths.txt")
 post$OrigLen <- NA
 
 for (j in 1:nrow(post)) {
-  pos <- which(tolower(as.character(lenwords$English )) == tolower(as.character(post$Item[j])))
+  pos <- which(tolower(as.character(lenwords$English)) == tolower(as.character(post$Item[j])))
   post$OrigLen[j] <- lenwords[pos,3] #}
   print(j)
   rm(pos)
 }
 
-post$CorrPer <- round(post$PhonCorr/post$OrigLen,2)
-post$IncorrPer <- round(post$PhonIncorr/post$OrigLen, 2)
+post$CorrPer <- round(post$PhonCorrect/post$Total,2)
+post$Corr <- round(post$CorrPer*post$PhonCorrect,0)
+post$Incorr <- post$OrigLen-post$Corr
+#post$Corr <- round(post$CorrPer*post$OrigLen,0)
+#post$Incorr <- post$OrigLen-post$Corr
 
-post$Corr <- round(post$CorrPer*post$PhonCorr,0)
-post$Incorr <- round(post$IncorrPer*post$PhonIncorr,0)
+# subset data to only the first round during the FinalTest
+post1 <- post[post$Trial_nr<71,]
 
 # random intercept model
-model <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+model <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
 summary(model)
 
 # random slope model
-model2 <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+model2 <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
 summary(model2)
 
-# simple Anova
-anova_ratio <- aov(Ratio ~ Condition, data = post)
+# simple Anova for accuracy
+anova_ratio <- aov(Ratio ~ Condition, data = post1)
 summary(anova_ratio)
 
+### RTs
+# simple Anova for RTs (log-transformed)
+anova_rt <- aov(RTlog ~ Condition, data = post1)
+summary(anova_rt)
+
+# random intercept model for RTs (with a log link) --> does not converge though
+modelRT <- glmer(VoiceOnset~ Condition + (1|Subject_nr) + (1|Item), family= poisson(link = "log"), data = post1)
+summary(modelRT)
+
+# random intercept model for log-transformed RTs 
+modelRT <- lmer(RTlog~ Condition + (1|Subject_nr) + (1|Item), data = post1)
+summary(modelRT)
+
+# random slope model for RTs
+modelRT2 <- lmer(RTlog~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), data = post1)
+summary(modelRT2)
