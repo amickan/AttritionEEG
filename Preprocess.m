@@ -110,9 +110,6 @@ data_filtered           = ft_preprocessing(cfg, data_all);
 cfg = [];
 cfg.dataset      = vhdr;
 cfg.headerfile   = vhdr; % this needs to be specified, otherwise it doesn't work
-% Baseline correction criteria
-cfg.demean = 'yes';
-cfg.baselinewindow = [-0.5 0];
 % trial selection criteria general
 cfg.trialfun = 'correctonly_trialfun'; % this is to only select correct trials 
 cfg.trialdef.prestim    = 0.5; % time before marker in seconds
@@ -128,6 +125,14 @@ cfg_finaltestcond2    = ft_definetrial(cfg);
 %cut the trials out of the continuous data segment 
 data_finaltestcond1 = ft_redefinetrial(cfg_finaltestcond1, data_filtered);
 data_finaltestcond2    = ft_redefinetrial(cfg_finaltestcond2, data_filtered);
+
+% Baseline correction 
+cfg.demean = 'yes';
+cfg.dataset      = vhdr;
+cfg.headerfile   = vhdr; 
+cfg.baselinewindow = [-0.5 0];
+data_finaltestcond1 = ft_preprocessing(cfg, data_finaltestcond1); 
+data_finaltestcond2 = ft_preprocessing(cfg, data_finaltestcond2); 
 
 %% Artifact rejection 
 % automatic artifact rejection
