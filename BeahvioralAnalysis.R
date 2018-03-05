@@ -9,7 +9,6 @@ A = c(301:329)
 
 data_list <- list()
 data_list2 <- list()
-data_list3 <- list()
 
 for (i in 1:length(A)){
   pNumber = A[i]
@@ -156,10 +155,9 @@ for (j in 1:nrow(post)) {
 }
 
 post$CorrPer <- round(post$PhonCorrect/post$Total,2)
-post$Corr <- round(post$CorrPer*post$PhonCorrect,0)
+post$Corr <- round(post$CorrPer*post$OrigLen,0)
+#post$Corr <- round(post$CorrPer*post$PhonCorrect,0)
 post$Incorr <- post$OrigLen-post$Corr
-#post$Corr <- round(post$CorrPer*post$OrigLen,0)
-#post$Incorr <- post$OrigLen-post$Corr
 
 # subset data to only the first round during the FinalTest
 post1 <- post[post$Trial_nr<71,]
@@ -173,7 +171,7 @@ model2 <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (1
 summary(model2)
 
 # simple Anova for accuracy
-anova_ratio <- aov(Ratio ~ Condition, data = post1)
+anova_ratio <- aov(Ratio ~ Condition, data = post)
 summary(anova_ratio)
 
 ### RTs
