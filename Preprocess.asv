@@ -177,10 +177,10 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
 
     % Then view one channel at a time
     cfg = [];
-    cfg.channel = (1:56);                    
+    cfg.channel = [1:60 62 64];                     % select channels with information (62 and 64 here are the heog and veog)
     cfg.keepchannel = 'nan';
     cfg.method = 'channel';
-    data_clean = ft_rejectvisual(cfg, data_clean);
+    data_clean = ft_rejectvisual(cfg, data_all);
     
     %% Cut data in two conditions and save datasets seperately 
     cfg = [];
@@ -189,7 +189,7 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     % trial selection criteria general
     cfg.trialfun = 'correctonly_trialfun';      % this is to only select correct trials 
     cfg.trialdef.prestim    = 0.2;              % time before marker in seconds
-    cfg.trialdef.poststim   = 1.5;              % time after marker in seconds
+    cfg.trialdef.poststim   = 1.5;                % time after marker in seconds
     cfg.marker2 = 'S205';                       % correct / incorrect response marker 
     
     % trial selection crtieria for condition 1
