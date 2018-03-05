@@ -11,8 +11,8 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfg = [];
     cfg.dataset     = vhdr;                         % raw data file name
     cfg.trialfun = 'ft_trialfun_allconditions';     % selecting only trials from the final test 
-    cfg.trialdef.prestim    = 0.5;                  % time before marker in seconds (should be generous to avoid filtering artifacts)
-    cfg.trialdef.poststim   = 2;                    % time after marker in seconds (should be generous to avoid filtering artifacts)
+    cfg.trialdef.prestim    = 0.2;                  % time before marker in seconds (should be generous to avoid filtering artifacts)
+    cfg.trialdef.poststim   = 1.5;                    % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfg.markers = {'S208', 'S209'};                 % markers marking stimulus events in the final test
 
     % Define trials (in cfg.trl)
@@ -48,8 +48,8 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfgHEOG.bpfreq = [1 15];
     cfgHEOG.bpfiltord = 4;
     cfgHEOG.refchannel = 'EOGleft';
-    cfgHEOG.trialdef.prestim    = 0.5;                % time before marker in seconds (should be generous to avoid filtering artifacts)
-    cfgHEOG.trialdef.poststim   = 2;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
+    cfgHEOG.trialdef.prestim    = 0.2;                % time before marker in seconds (should be generous to avoid filtering artifacts)
+    cfgHEOG.trialdef.poststim   = 1.5;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgHEOG.demean = 'yes';
     cfgHEOG.baselinewindow = [-0.2 0];                % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgHEOG = ft_definetrial(cfgHEOG);
@@ -76,8 +76,8 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfgVEOG.bpfreq = [1 15];
     cfgVEOG.bpfiltord = 4;
     cfgVEOG.refchannel = 'EOGabove';
-    cfgVEOG.trialdef.prestim    = 0.5;                % time before marker in seconds (should be generous to avoid filtering artifacts)
-    cfgVEOG.trialdef.poststim   = 2;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
+    cfgVEOG.trialdef.prestim    = 0.2;                % time before marker in seconds (should be generous to avoid filtering artifacts)
+    cfgVEOG.trialdef.poststim   = 1.5;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgVEOG.demean = 'yes';
     cfgVEOG.baselinewindow = [-0.2 0];                % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgVEOG = ft_definetrial(cfgVEOG);
@@ -103,8 +103,8 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfgLips.bpfreq = [110 140];
     cfgLips.bpfiltord = 8;
     cfgLips.refchannel = 'LipUp';
-    cfgLips.trialdef.prestim    = 0.5;                % time before marker in seconds (should be generous to avoid filtering artifacts)
-    cfgLips.trialdef.poststim   = 2;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
+    cfgLips.trialdef.prestim    = 0.2;                % time before marker in seconds (should be generous to avoid filtering artifacts)
+    cfgLips.trialdef.poststim   = 1.5;                  % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgLips.demean = 'yes';
     cfgLips.baselinewindow = [-0.2 0];                % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgLips = ft_definetrial(cfgLips);
@@ -135,7 +135,7 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfg.artfctdef.threshold.range     = 150;
     cfg.artfctdef.threshold.min       = -100; 
     cfg.artfctdef.threshold.max       = 100;
-    cfg.trl                           = data_all.cfg.previous{1,1}.trl
+    cfg.trl                           = data_all.cfg.previous{1,1}.trl;
     [cfg, artifact_threshold] = ft_artifact_threshold(cfg, data_all);
 
     % Clips - flat electrodes / trials 
@@ -158,18 +158,39 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     % manual artifact rejection by visual inspection of each trial
     cfg.viewmode         = 'vertical';
     cfg.selectmode       = 'markartifact';
+    cfg.eegscale         = 1;
+    cfg.eogscale         = 1.5;
     cfg                  = ft_databrowser(cfg, data_all);                       % double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
     cfg.artfctdef.reject = 'complete';                                          % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
     data_clean     = ft_rejectartifact(cfg, data_all); 
+    
+    % OR PURELY VISUAL 
+    % First view one trial at a time
+    %cfg = [];
+    %cfg.alim = 15;
+    %cfg.eegscale = 1;
+    %cfg.eogscale = 1.5;
+    %cfg.keepchannel = 'yes';
+    %cfg.method = 'trial';
+    %cfg.plotlayout = '1col';
+    %data_clean = ft_rejectvisual(cfg, data_all);
 
+    % Then view one channel at a time
+    %cfg = [];
+    %cfg.alim     = 1e-12;
+    %cfg.channel = [1:60 62 64];                     % select channels with information (62 and 64 here are the heog and veog)
+    %cfg.keepchannel = 'nan';
+    %cfg.method = 'channel';
+    %data_clean = ft_rejectvisual(cfg, data_clean);
+    
     %% Cut data in two conditions and save datasets seperately 
     cfg = [];
     cfg.dataset      = vhdr;
     cfg.headerfile   = vhdr;                    % this needs to be specified, otherwise it doesn't work
     % trial selection criteria general
     cfg.trialfun = 'correctonly_trialfun';      % this is to only select correct trials 
-    cfg.trialdef.prestim    = 0.5;              % time before marker in seconds
-    cfg.trialdef.poststim   = 2;                % time after marker in seconds
+    cfg.trialdef.prestim    = 0.2;              % time before marker in seconds
+    cfg.trialdef.poststim   = 1.5;                % time after marker in seconds
     cfg.marker2 = 'S205';                       % correct / incorrect response marker 
     
     % trial selection crtieria for condition 1
