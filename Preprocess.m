@@ -82,7 +82,7 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     cfgVEOG.baselinewindow = [-0.2 0];                % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgVEOG = ft_definetrial(cfgVEOG);
     data_VEOG = ft_preprocessing (cfgVEOG);
-    data_VEOG.label(1) = {'EOGV'};                   % rename newly created channel
+    data_VEOG.label(2) = {'EOGV'};                   % rename newly created channel
 
     %checking that EOGabove was referenced to itself
     %figure
@@ -126,34 +126,45 @@ cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where you have the EEG
     % automatic artifact rejection
     % Threshold artifact detection: trials with amplitudes above or below
     % +-100m or with a difference between min and max of more than 150mV
-    cfg                               = [];
-    cfg.continuous                    = 'no';
-    cfg.artfctdef.threshold.channel   = (1:56);  % only non-EOG channels
-    cfg.artfctdef.threshold.bpfilter  = 'yes';
-    cfg.artfctdef.threshold.bpfreq    = [0.3 30];
-    cfg.artfctdef.threshold.bpfiltord = 4;
-    cfg.artfctdef.threshold.range     = 150;
-    cfg.artfctdef.threshold.min       = -100; 
-    cfg.artfctdef.threshold.max       = 100;
-    cfg.trl                           = data_all.cfg.previous{1,1}.trl;
-    [cfg, artifact_threshold] = ft_artifact_threshold(cfg, data_all);
+    cfg                                     = [];
+    cfg.continuous                          = 'no';
+    cfg.artfctdef.threshold.channel         = 'EEG';  % only non-EOG channels
+    cfg.artfctdef.threshold.lpfilter        = 'yes';
+    cfg.artfctdef.threshold.lpfreq          = 40;
+    cfg.artfctdef.threshold.hpfilter        = 'no';
+    cfg.artfctdef.threshold.bpfilter        = 'no';
+    cfg.artfctdef.threshold.demean          = 'yes';
+    cfg.artfctdef.threshold.baselinewindow  = [-0.2 0];
+    cfg.artfctdef.threshold.reref           = 'yes';
+    cfg.artfctdef.threshold.implicitref     = 'Ref';
+    cfg.artfctdef.threshold.refchannel      = {'LinkMast','Ref'};
+    cfg.artfctdef.threshold.range           = 150;
+    cfg.artfctdef.threshold.min             = -100; 
+    cfg.artfctdef.threshold.max             = 100;
+    cfg.trl                                 = data_all.cfg.previous{1,1}.trl;
+    [cfg, artifact_threshold]               = ft_artifact_threshold(cfg, data_all);
 
     % Clips - flat electrodes / trials 
-    %cfg.artfctdef.clip.pretim        = 0.000;  %pre-artifact rejection-interval in seconds
-    %cfg.artfctdef.clip.psttim        = 0.000;  %post-artifact rejection-interval in seconds
-    cfg.artfctdef.clip.channel = (1:56);
-    cfg.artfctdef.clip.timethreshold = 0.05; %minimum duration in seconds of a datasegment with consecutive identical samples to be considered as 'clipped'
-    cfg.artfctdef.clip.amplthreshold = 0; %minimum amplitude difference in consecutive samples to be considered as 'clipped' (default = 0)
-    [cfg, artifact_clip] = ft_artifact_clip(cfg, data_all);
+    % cfg.artfctdef.clip.pretim             = 0.000;    % pre-artifact rejection-interval in seconds
+    % cfg.artfctdef.clip.psttim             = 0.000;  	% post-artifact rejection-interval in seconds
+    cfg.artfctdef.clip.channel              = 'EEG';
+    cfg.artfctdef.clip.timethreshold        = 0.05;     % minimum duration in seconds of a datasegment with consecutive identical samples to be considered as 'clipped'
+    cfg.artfctdef.clip.amplthreshold        = 0;        % minimum amplitude difference in consecutive samples to be considered as 'clipped' (default = 0)
+    [cfg, artifact_clip]                    = ft_artifact_clip(cfg, data_all);
 
     % Eye-blinks - somehow this finds a huge amount fo artifacts, something is
     % wrong with settings
-    cfg.artfctdef.eog.channel = [58,60]; % only HEOG and VEOG
-    cfg.artfctdef.eog.cutoff      = 6;
-    cfg.artfctdef.eog.trlpadding  = 0; %0.5?
-    cfg.artfctdef.eog.artpadding  = 0.1;
-    cfg.artfctdef.eog.fltpadding  = 0; %0.1
-    [cfg, artifact_eog] = ft_artifact_eog(cfg, data_all);
+    cfg.artfctdef.zvalue.channel               = [58,60];  % only HEOG and VEOG
+    cfg.artfctdef.zvalue.bpfilter              = 'yes';
+    cfg.artfctdef.zvalue.bpfilttype            = 'but';
+    cfg.artfctdef.zvalue.bpfreq                = [1 15];
+    cfg.artfctdef.zvalue.bpfiltord             = 4;
+    cfg.artfctdef.zvalue.hilbert               = 'yes';
+    cfg.artfctdef.zvalue.demean                = 'yes';
+    cfg.artfctdef.zvalue.baselinewindow        = [-0.2 0]; 
+    cfg.artfctdef.zvalue.cutoff                = 4;      
+    cfg.artfctdef.zvalue.artpadding            = 0.1;       
+    [cfg, artifact_eog]                        = ft_artifact_zvalue(cfg, data_all);
 
     % manual artifact rejection by visual inspection of each trial
     cfg.viewmode         = 'vertical';
