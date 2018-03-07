@@ -107,6 +107,10 @@ post$Item <- as.factor(post$Item)
 # log-transforming the RTs
 post$RTlog <- log(post$VoiceOnset)
 
+# calculating ratio
+post$Total <- post$PhonCorr+post$PhonIncorr
+post$Ratio <- (post$PhonCorr/post$Total)*100
+
 # subset to only the first round of Final test
 post1 <- post[post$Trial_nr<71,]
 
@@ -115,9 +119,6 @@ require(plyr)
 require(ggplot2)
 
 ### Fine-grained error rates ###
-
-post$Total <- post$PhonCorr+post$PhonIncorr
-post$Ratio <- (post$PhonCorr/post$Total)*100
 
 # histogram of results 
 hist(post$Ratio)
