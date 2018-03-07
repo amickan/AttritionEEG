@@ -15,9 +15,11 @@ for (i in 1:length(A)){
   wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_FinalTest", sep="")
   wd2 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day2/",pNumber,"_Posttest_Day2", sep="")
   wd3 <- paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_Familiarization", sep="")
+  wd4 <- paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day1/", sep="")
   infile1 <- paste(pNumber,"Posttest_Day2.txt",sep="_")
   infile2 <- paste(pNumber,"Finaltest.txt",sep="_")
   infile3 <- paste(pNumber, "IntFamiliarization.txt", sep="_")
+  infile4 <- paste(pNumber, "Familiarization_Day1.txt", sep="_")
   
   setwd(wd2)
   currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
@@ -64,7 +66,32 @@ for (i in 1:length(A)){
       currentFile2$PhonIncorrect[pos]<-NA}
   }
   
+  setwd(wd4)
+  currentFile4 <- as.data.frame(read.delim(infile4, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  
+  for (j in 1:nrow(currentFile4)) {
+    pos <- which(tolower(as.character(currentFile2$Item )) == tolower(as.character(currentFile4$Item[j])))
+    if (currentFile4$Known[j] == 1) {
+      currentFile2$Error[pos] <- NA
+      currentFile2$VoiceOnset[pos] <- NA
+      currentFile2$PhonCorrect[pos]<- NA
+      currentFile2$PhonIncorrect[pos]<-NA}
+  }
+  
   data_list2[[i]] <- currentFile2
+  
+  for (l in 1:nrow(currentFile2)) {
+    if (currentFile2$Error[l] == 1 || is.na(currentFile2$Error[l])) {
+      currentFile2$ReadIn[l] <- 0
+    } else {
+      currentFile2$ReadIn[l] <- 1
+    }
+  }
+  
+  # safe the new Final test file for the NewMarker.m script
+  setwd(wd1)
+  outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
+  write.table(currentFile2, outfile, row.names = F, col.names = T, sep = "\t")
   
   print(A[i])
   

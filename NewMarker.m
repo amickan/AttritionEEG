@@ -6,7 +6,7 @@ cd(curdir);
 FinalTestFileName=strcat(int2str(pNumber),'_FinalTest_new.txt');
 fid = fopen(FinalTestFileName);
 headline21=fgets(fid); % read and safe the header of the file for later
-E = textscan(fid, '%d%d%d%s%s%s%d%d%d%d%s%s%s%d%d'); % 14 columns and 1 headerline
+E = textscan(fid, '%d%d%d%s%s%s%d%s%d%s%s%s%s%d%d'); % 14 columns and 1 headerline
 Item = E{4};
 Cond = E{7};
 Marker = E{9};
