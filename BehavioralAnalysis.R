@@ -91,7 +91,7 @@ for (i in 1:length(A)){
   # safe the new Final test file for the NewMarker.m script
   setwd(wd1)
   outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
-  write.table(currentFile2, outfile, row.names = F, col.names = T, sep = "\t")
+  write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
   
   print(A[i])
   
