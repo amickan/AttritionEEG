@@ -1,32 +1,28 @@
-%Condition1 from timelock analysis
-%cond1 from timelock grandaverage
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');
 
-%for a single subject, average of trials with timelockanalisis for
-%neighbours
-dummy = load(strcat('PreprocessedData\301_data_clean_cond2'))
-Condition2 = ft_timelockanalysis(cfg, dummy.data_finaltestcond2);
-
-%copy from grandaverage script
-subjects = [301:307, 310:312, 314:320, 322:326, 328, 329];
-cfg = [];
-cfg.keeptrials='yes';
-for i = 1:length(subjects)
-    % condition 1 for each participant
-    filename1 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1');
-    dummy = load(filename1);
-    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
-    % condition 2 for each participant
-    filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
-    dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
-end
+%data neighbours
+str = load(strcat('PreprocessedData\301_data_clean_cond2'))
+cond2_301 = ft_timelockanalysis(cfg, str.data_finaltestcond2);
 
 %creation of a structure with ft_neighbourselection
 cfg_neighb        = [];
 cfg_neighb.method = 'template';         %may be changed with 'distance'
 cfg.feedback      ='yes'
-neighbours        = ft_prepare_neighbours(cfg_neighb, Condition2);
+neighbours        = ft_prepare_neighbours(cfg_neighb, cond2_301);
+%error: Struct contents reference from a non-struct array object
 
+%data permutation test
+subjects = [301:307, 310:312, 314:320, 322:326, 328, 329];
+cfg = [];
+cfg.keeptrials='yes';
+for i = 1:length(subjects)
+    % condition 1 for each participant
+    dummy = load(strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1'));
+    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
+    % condition 2 for each participant
+    dummy2 = load(strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2'));
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+end
 
 
 %configuration settings
@@ -50,7 +46,7 @@ cfg.clustertail = 0;
 cfg.alpha = 0.025;               % alpha level of the permutation test
 cfg.numrandomization = 500;      % number of draws from the permutation distribution
 
-subj = 25; %number of participants excluding the ones with too few trials
+subj = 24; %number of participants
 design = zeros(2,2*subj);
 for i = 1:subj
   design(1,i) = i;
