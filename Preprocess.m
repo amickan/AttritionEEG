@@ -205,25 +205,27 @@ function Preprocess(pNumber)
     %data_clean = ft_rejectvisual(cfg, data_all);
 
     % Then view one channel at a time
-    cfg = [];
-    cfg.channel = (1:56);                    
-    cfg.keepchannel = 'nan';
-    cfg.method = 'channel';
-    data_clean = ft_rejectvisual(cfg, data_clean);
+    cfg                 = [];
+    cfg.channel         = 'EEG';                    
+    cfg.keepchannel     = 'nan';
+    %cfg.alim            = 1e-12;
+    %cfg.eogscale        = 5e-8;
+    cfg.method          = 'channel';
+    data_clean          = ft_rejectvisual(cfg, data_clean);
     
     %% Cut data in two conditions and save datasets seperately 
-    cfg = [];
-    cfg.dataset      = vhdr;
-    cfg.headerfile   = vhdr;                    % this needs to be specified, otherwise it doesn't work
+    cfg                 = [];
+    cfg.dataset         = vhdr;
+    cfg.headerfile      = vhdr;                    % this needs to be specified, otherwise it doesn't work
     % trial selection criteria general
-    cfg.trialfun = 'correctonly_trialfun';      % this is to only select correct trials 
+    cfg.trialfun        = 'correctonly_trialfun';      % this is to only select correct trials 
     cfg.trialdef.prestim    = 0.5;              % time before marker in seconds
     cfg.trialdef.poststim   = 1.5;              % time after marker in seconds
-    cfg.marker2 = 'S205';                       % correct / incorrect response marker 
+    cfg.marker2         = 'S205';                       % correct / incorrect response marker 
     
     % trial selection crtieria for condition 1
-    cfg.marker1 = 'S208';                       % for the markers that only have two numbers you need to insert a space
-    cfg_finaltestcond1    = ft_definetrial(cfg);
+    cfg.marker1         = 'S208';                       % for the markers that only have two numbers you need to insert a space
+    cfg_finaltestcond1  = ft_definetrial(cfg);
     
     % excluding trials from the new segmentation that were rejected by
     % artifact rejection
