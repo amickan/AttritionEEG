@@ -1,15 +1,25 @@
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');
 
+%% before cluster based permutation test: neighbour definition
 %data neighbours
-str = load(strcat('PreprocessedData\301_data_clean_cond2'))
+cfg         = [];
+str = load(strcat('PreprocessedData\301_data_clean_cond2'));
 cond2_301 = ft_timelockanalysis(cfg, str.data_finaltestcond2);
 
 %creation of a structure with ft_neighbourselection
 cfg_neighb        = [];
-cfg_neighb.method = 'template';         %may be changed with 'distance'
-cfg.feedback      ='yes'
+cfg_neighb.method = 'template';         %better than 'distance'
+cfg.feedback      ='yes';
 neighbours        = ft_prepare_neighbours(cfg_neighb, cond2_301);
-%error: Struct contents reference from a non-struct array object
+
+%verify template-defined neighbours
+cfg_neighb.verbose       = 'yes';
+cfg_neighb.layout        ='actiCAP_64ch_Standard2.mat';
+cfg_neighb.neighbours    = neighbours;
+ft_neighbourplot(cfg_neighb, cond2_301);
+
+
+%% cluster based permutation test
 
 %data permutation test
 subjects = [301:307, 310:312, 314:320, 322:326, 328, 329];
@@ -27,17 +37,17 @@ end
 
 %configuration settings
 cfg = [];
-cfg.method = 'montecarlo';       % use the Monte Carlo Method to calculate the significance probability
-cfg.channel       = {'EEG'};     % cell-array with selected channel labels
-cfg.latency       = [0.1 1];       % time interval over which the experimental 
+cfg.channel       = 'all';     % cell-array with selected channel labels
+cfg.latency       = [0 1];       % time interval over which the experimental 
                                  % conditions must be compared (in seconds)
-cfg.statistic = 'ft_statfun_depsamplesT'; % within design
+cfg.method = 'montecarlo';       % use the Monte Carlo Method to calculate the significance probability
+cfg.statistic = 'depsamplesT'; % within design
 cfg.correctm = 'cluster';
 cfg.clusteralpha = 0.05;         % alpha level of the sample-specific test statistic that 
                                  % will be used for thresholding
 cfg.clusterstatistic = 'maxsum'; % test statistic that will be evaluated under the 
                                  % permutation distribution. 
-%cfg.minnbchan = 2;               % minimum number of neighborhood channels that is 
+cfg.minnbchan = 2;               % minimum number of neighborhood channels that is 
                                  % required for a selected sample to be included 
                                  % in the clustering algorithm (default=0).
 cfg.neighbours = neighbours;   
@@ -57,23 +67,43 @@ end
 design(2,1:subj)        = 1;
 design(2,subj+1:2*subj) = 2;
 
-cfg.design = design;             % design matrix EDIT FOR WITHIN
-cfg.uvar = 1;                       %unit variable
-cfg.ivar  = 1;                   % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
+cfg.design = design;             % design matrix 
+cfg.uvar = design(1,:);                %unit variable
+cfg.ivar  = design(2,:);               % number or list with indices indicating the independent variable(s) 
 
 [stat] = ft_timelockstatistics(cfg, Condition1{:}, Condition2{:});
 
+%  'the length of the design matrix (%d) does not match the number of observations in the data (%d)', size(cfg.design,2),
+%  size(dat,2));
+
+
 %save stat_ERP stat;
 
-% % plot the result
-% cfg = [];
-% avgFIC = ft_timelockanalysis(cfg, dataFIC_LP);
-% avgFC  = ft_timelockanalysis(cfg, dataFC_LP);
+%% plot the results
 
-% Then take the difference of the averages using ft_math
+%use of timelock grand average
+cfg = [];
+cfg.keeptrials='yes';
+cfg.parameter= 'avg';
+cfg.channel='all';
+cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
+cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+
+% plots
 cfg  = [];
 cfg.operation = 'subtract';
 cfg.parameter = 'avg';
-raweffect = ft_math(cfg,Condition1,Condition2);
+contrasts = ft_math(cfg, cond1,cond2);
+
+
+figure;  
+% define parameters for plotting
+timestep = 0.05;      %(in seconds)
+sampling_rate = dataFIC_LP.fsample; %da cambiare
+sample_count = length(stat.time);
+j = [0:timestep:1];   % Temporal endpoints (in seconds) of the ERP average computed in each subplot
+m = [1:timestep*sampling_rate:sample_count];  % temporal endpoints in MEEG samples
+% get relevant (significant) values
+pos_cluster_pvals = [stat.posclusters(:).prob];
 
 %We then construct a boolean matrix indicating membership in the significant clusters.
