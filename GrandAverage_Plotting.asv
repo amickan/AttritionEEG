@@ -13,17 +13,16 @@ for i = 1:length(subjects)
     cfg=[];
     cfg.baseline = 'yes';
     cfg.baselinewindow = [-0.2 0];
-    Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
+    ft_timelockbaselCondition1{i}
     % condition 2 for each participant
     filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
-    Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
 end
 
 % grand-average over subjects per condition 
 cfg = [];
-cfg.keepindividuals='yes';
+cfg.keeptrials='yes';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 

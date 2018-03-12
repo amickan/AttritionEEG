@@ -56,7 +56,7 @@ function Preprocess(pNumber)
     cfgHEOG.bpfreq              = [1 15];
     cfgHEOG.bpfiltord           = 4;
     cfgHEOG.demean              = 'yes';
-    %cfgHEOG.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
+    cfgHEOG.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgHEOG                     = ft_definetrial(cfgHEOG);
     % apply the set parameters on the data
     data_HEOG                   = ft_preprocessing (cfgHEOG);
@@ -88,7 +88,7 @@ function Preprocess(pNumber)
     cfgVEOG.bpfreq              = [1 15];
     cfgVEOG.bpfiltord           = 4;
     cfgVEOG.demean              = 'yes';
-    %cfgVEOG.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
+    cfgVEOG.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgVEOG                     = ft_definetrial(cfgVEOG);
     % apply the set parameters on the data
     data_VEOG                   = ft_preprocessing (cfgVEOG);
@@ -120,7 +120,7 @@ function Preprocess(pNumber)
     cfgLips.bpfreq              = [110 140];
     cfgLips.bpfiltord           = 8;
     cfgLips.demean              = 'yes';
-    %cfgLips.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
+    cfgLips.baselinewindow      = [-0.2 0];                     % data will be baseline corrected in a window from -200ms to stimulus onset
     cfgLips                     = ft_definetrial(cfgLips);
     % apply the set parameters on the data
     data_lips                   = ft_preprocessing (cfgLips);
@@ -152,8 +152,8 @@ function Preprocess(pNumber)
     cfg.artfctdef.threshold.lpfreq          = 40;
     cfg.artfctdef.threshold.hpfilter        = 'no';
     cfg.artfctdef.threshold.bpfilter        = 'no';
-    %cfg.artfctdef.threshold.demean          = 'yes';
-    %cfg.artfctdef.threshold.baselinewindow  = [-0.2 0];
+    cfg.artfctdef.threshold.demean          = 'yes';
+    cfg.artfctdef.threshold.baselinewindow  = [-0.2 0];
     %cfg.artfctdef.threshold.reref           = 'yes';
     %cfg.artfctdef.threshold.implicitref     = 'Ref';
     %cfg.artfctdef.threshold.refchannel      = {'LinkMast','Ref'};
@@ -178,8 +178,8 @@ function Preprocess(pNumber)
     cfg.artfctdef.zvalue.bpfreq                = [1 15];
     cfg.artfctdef.zvalue.bpfiltord             = 4;
     cfg.artfctdef.zvalue.hilbert               = 'yes';
-    %cfg.artfctdef.zvalue.demean                = 'yes';
-    %cfg.artfctdef.zvalue.baselinewindow        = [-0.2 0]; 
+    cfg.artfctdef.zvalue.demean                = 'yes';
+    cfg.artfctdef.zvalue.baselinewindow        = [-0.2 0]; 
     cfg.artfctdef.zvalue.cutoff                = 4;      
     cfg.artfctdef.zvalue.artpadding            = 0.1;       
     [cfg, artifact_eog]                        = ft_artifact_zvalue(cfg, data_all);
@@ -189,7 +189,6 @@ function Preprocess(pNumber)
     cfg.selectmode       = 'markartifact';
     cfg.eegscale         = 1;
     cfg.eogscale         = 1.5;
-    cfg.layout           = 'actiCAP_64ch_Standard2.mat';
     cfg                  = ft_databrowser(cfg, data_all);                       % double click on segments to mark them as artefacts, then at the end exist the box by clicking 'q' or the X
     cfg.artfctdef.reject = 'complete';                                          % this rejects complete trials, use 'partial' if you want to do partial artifact rejection
     data_clean     = ft_rejectartifact(cfg, data_all); 
