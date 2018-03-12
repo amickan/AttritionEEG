@@ -88,7 +88,7 @@ contrast = ft_math(cfg, cond1, cond2);
 figure;  
 % define parameters for plotting
 timestep = 0.05;      %(in seconds)
-sampling_rate = 500; %da cambiare
+sampling_rate = 500; 
 sample_count = length(stat.time);
 j = [0:timestep:1];   % Temporal endpoints (in seconds) of the ERP average computed in each subplot
 m = [1:timestep*sampling_rate:sample_count];  % temporal endpoints in MEEG samples
@@ -108,12 +108,12 @@ for k = 1:10;
      cfg = [];   
      cfg.xlim=[j(k) j(k+1)];   
      cfg.zlim = [-5e-14 5e-14];   
-     pos_int = zeros(numel(raweffect.label),1);
+     pos_int = zeros(numel(contrast.label),1);
      pos_int(i1) = all(pos(i2, m(k):m(k+1)), 2);
      cfg.highlight = 'on';
      cfg.highlightchannel = find(pos_int);       
      cfg.comment = 'xlim';   
      cfg.commentpos = 'title';   
      cfg.layout = 'actiCAP_64ch_Standard2.mat';
-     ft_topoplotER(cfg, cond1);
+     ft_topoplotER(cfg, contrast);
 end 
