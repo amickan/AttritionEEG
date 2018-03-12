@@ -103,7 +103,7 @@ pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
 [i1,i2] = match_str(contrast.label, stat.label); 
 
 % plot
-for k = 1:10;
+for k = 1:24;
      subplot(4,5,k);   
      cfg = [];   
      cfg.xlim=[j(k) j(k+1)];   
@@ -117,3 +117,6 @@ for k = 1:10;
      cfg.layout = 'actiCAP_64ch_Standard2.mat';
      ft_topoplotER(cfg, cond1);
 end 
+
+
+%We then construct a boolean matrix indicating membership in the significant clusters.
