@@ -13,23 +13,22 @@ for i = 1:length(subjects)
     cfg=[];
     cfg.baseline = 'yes';
     cfg.baselinewindow = [-0.2 0];
-    ft_timelockbaselCondition1{i}
+    Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     % condition 2 for each participant
     filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
 end
 
 % grand-average over subjects per condition 
 cfg = [];
-cfg.keeptrials='yes';
+cfg.keepindividuals='yes';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 
 % plotting average
 cfg = [];
-%cfg.demean = 'yes'; %baseline
-%cfg.baselinewindow = [-0.5 0]; %baseline
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';

@@ -4,15 +4,14 @@ subjects = [301:307, 310:312, 314:320, 322:326, 328, 329]; % subjects that shoul
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 cfg = [];
 cfg.keeptrials='yes';
+cfg.baseline = 'yes';
+cfg.baselinewindow = [-0.2 0];
 
 for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1');
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
-    cfg=[];
-    cfg.baseline = 'yes';
-    cfg.baselinewindow = [-0.2 0];
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     % condition 2 for each participant
     filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
@@ -29,8 +28,6 @@ cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 
 % plotting average
 cfg = [];
-%cfg.demean = 'yes'; %baseline
-%cfg.baselinewindow = [-0.5 0]; %baseline
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
