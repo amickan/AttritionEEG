@@ -5,8 +5,16 @@ function PreprocessInt(pNumber)
     % define files for this participant
     vhdr = strcat(num2str(pNumber), '\Day3\EEG\',num2str(pNumber), '.vhdr');
     preprocFile = strcat('PreprocessedData\', num2str(pNumber), '_Interference_data_all_preprocessed');
-    cond1out = strcat('PreprocessedData\', num2str(pNumber), '_Interference_data_clean_cond1');
-    cond2out = strcat('PreprocessedData\', num2str(pNumber), '_Interference_data_clean_cond2');
+    cond1outFam = strcat('PreprocessedData\', num2str(pNumber), '_Fam_data_clean_cond1');
+    cond2outFam = strcat('PreprocessedData\', num2str(pNumber), '_Fam_data_clean_cond2');
+    cond1outPic1 = strcat('PreprocessedData\', num2str(pNumber), '_Pic1_data_clean_cond1');
+    cond2outPic1 = strcat('PreprocessedData\', num2str(pNumber), '_Pic1_data_clean_cond2');
+    cond1outPic2 = strcat('PreprocessedData\', num2str(pNumber), '_Pic2_data_clean_cond1');
+    cond2outPic2 = strcat('PreprocessedData\', num2str(pNumber), '_Pic2_data_clean_cond2');
+    cond1outPic3 = strcat('PreprocessedData\', num2str(pNumber), '_Pic3_data_clean_cond1');
+    cond2outPic3 = strcat('PreprocessedData\', num2str(pNumber), '_Pic3_data_clean_cond2');
+    cond1outPic4 = strcat('PreprocessedData\', num2str(pNumber), '_Pic4_data_clean_cond1');
+    cond2outPic4 = strcat('PreprocessedData\', num2str(pNumber), '_Pic4_data_clean_cond2');
 
     % defining settings for trial selection
     cfg                     = [];
@@ -228,39 +236,83 @@ function PreprocessInt(pNumber)
     %% Select trials for further analysis
     % Here you can exclude incorrect answers etc. and cut data into 2 conditions
     cfg=[];
-    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& ((data_clean.trialinfo(:,1) == 18)|(data_clean.trialinfo(:,1) == 19))); % this assumes that column 5 is accuracy and that correct trials are indicated with 1. 
+    % Familiarization
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 18)); % this assumes that column 5 is accuracy and that correct trials are indicated with 1. 
     data_fam_cond1 = ft_selectdata(cfg, data_clean);
+    save(cond1outFam, 'data_fam_cond1');
     
-    cfg.trials = find(data_clean.trialinfo(:,5) == 1); 
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 19));
     data_fam_cond2 = ft_selectdata(cfg, data_clean);
-
-    save(cond1out, 'data_finaltestcond1');
-    save(cond2out, 'data_finaltestcond2');
+    save(cond2outFam, 'data_fam_cond2');
+    
+    % Picture naming round 1
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 108));
+    data_pic1_cond1 = ft_selectdata(cfg, data_clean);
+    save(cond1outPic1, 'data_pic1_cond1');
+    
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 109));
+    data_pic1_cond2 = ft_selectdata(cfg, data_clean);
+    save(cond2outPic1, 'data_pic1_cond2');
+    
+    % Picture naming round 2
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 118));
+    data_pic2_cond1 = ft_selectdata(cfg, data_clean);
+    save(cond1outPic2, 'data_pic2_cond1');
+    
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 119));
+    data_pic2_cond2 = ft_selectdata(cfg, data_clean);
+    save(cond2outPic2, 'data_pic2_cond2');
+    
+    % Picture naming round 3
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 128));
+    data_pic3_cond1 = ft_selectdata(cfg, data_clean);
+    save(cond1outPic3, 'data_pic3_cond1');
+    
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 129));
+    data_pic3_cond2 = ft_selectdata(cfg, data_clean);
+    save(cond2outPic3, 'data_pic3_cond2');
+    
+    % Picture naming round 4
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 138));
+    data_pic4_cond1 = ft_selectdata(cfg, data_clean);
+    save(cond1outPic4, 'data_pic4_cond1');
+    
+    cfg.trials = find((data_clean.trialinfo(:,2) == 1)& (data_clean.trialinfo(:,1) == 139));
+    data_pic4_cond2 = ft_selectdata(cfg, data_clean);
+    save(cond2outPic4, 'data_pic4_cond2');
 
     % document how many trials were kept for later analysis
-    c1 = length(data_finaltestcond1.trial);
-    c2 = length(data_finaltestcond2.trial);
+    c1 = length(data_fam_cond1.trial);
+    c2 = length(data_fam_cond2.trial);
+    c3 = length(data_pic1_cond1.trial);
+    c4 = length(data_pic1_cond2.trial);
+    c5 = length(data_pic2_cond1.trial);
+    c6 = length(data_pic2_cond2.trial);
+    c7 = length(data_pic3_cond1.trial);
+    c8 = length(data_pic3_cond2.trial);
+    c9 = length(data_pic4_cond1.trial);
+    c10 = length(data_pic4_cond2.trial);
     
     % save trial information in txt
     fid = fopen('TrialCount_PostPreprocessing.txt','a');
-    formatSpec = '%d\t%d\t%d\n';
-    fprintf(fid,formatSpec,pNumber,c1,c2);
+    formatSpec = '%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n';
+    fprintf(fid,formatSpec,pNumber,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10);
     
     % calculating average for this pp 
-    cfg = [];
-    cfg.keeptrials='yes';
-    cond1 = ft_timelockanalysis(cfg, data_finaltestcond1);
-    cond2 = ft_timelockanalysis(cfg, data_finaltestcond2);
+    %cfg = [];
+    %cfg.keeptrials='yes';
+    %cond1 = ft_timelockanalysis(cfg, data_finaltestcond1);
+    %cond2 = ft_timelockanalysis(cfg, data_finaltestcond2);
     % plotting average
-    cfg = [];
-    cfg.layout = 'actiCAP_64ch_Standard2.mat';
-    cfg.interactive = 'yes';
+    %cfg = [];
+    %cfg.layout = 'actiCAP_64ch_Standard2.mat';
+    %cfg.interactive = 'yes';
     %cfg.showoutline = 'yes';
-    cfg.showlabels = 'yes'; 
+    %cfg.showlabels = 'yes'; 
     %cfg.colorbar = 'yes';
-    cfg.fontsize = 6; 
+    %cfg.fontsize = 6; 
     %cfg.ylim = [-10 10];
-    ft_multiplotER(cfg, cond1, cond2);
+    %ft_multiplotER(cfg, cond1, cond2);
     
     disp('##############################################');
     disp(['## Done preprocessing PP_', num2str(pNumber),' ################']);
