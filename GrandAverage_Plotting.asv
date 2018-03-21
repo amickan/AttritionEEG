@@ -165,7 +165,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,30);
+subplot(5,8,14);
 plot ((cond1.time)*1000, cond1.avg(5,:), 'r',(cond1.time)*1000, cond2.avg(5,:), 'k');
 title('C4');
 ylim([-10 10]);
@@ -175,7 +175,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,39);
+subplot(5,5,15);
 plot ((cond1.time)*1000, cond1.avg(8,:), 'r', (cond1.time)*1000, cond2.avg(8,:), 'k');
 title('CP6');
 ylim([-10 10]);
@@ -185,7 +185,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,42);
+subplot(5,5,17);
 plot ((cond1.time)*1000, cond1.avg(17,:), 'r', (cond1.time)*1000, cond2.avg(17,:), 'k');
 title('P3');
 ylim([-10 10]);
@@ -195,7 +195,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,44);
+subplot(5,5,18);
 plot ((cond1.time)*1000, cond1.avg(13,:), 'r', (cond1.time)*1000, cond2.avg(13,:), 'k');
 title('Pz');
 ylim([-10 10]);
@@ -205,7 +205,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,46);
+subplot(5,5,19);
 plot ((cond1.time)*1000, cond1.avg(11,:), 'r',(cond1.time)*1000, cond2.avg(11,:), 'k');
 title('P4');
 ylim([-10 10]);
@@ -216,7 +216,7 @@ line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
 
-subplot(8,8,59);
+subplot(5,5,22);
 plot ((cond1.time)*1000, cond1.avg(15,:), 'r', (cond1.time)*1000, cond2.avg(15,:), 'k');
 title('O1');
 ylim([-10 10]);
@@ -226,7 +226,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,60);
+subplot(5,5,23);
 plot ((cond1.time)*1000, cond1.avg(14,:), 'r', (cond1.time)*1000, cond2.avg(14,:), 'k');
 title('Oz');
 ylim([-10 10]);
@@ -236,7 +236,7 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,61);
+subplot(5,5,24);
 plot ((cond1.time)*1000, cond1.avg(10,:), 'r', (cond1.time)*1000, cond2.avg(10,:), 'k');
 title('O2');
 ylim([-10 10]);

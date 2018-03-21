@@ -1,6 +1,6 @@
 % Loading all preprocessed data 
 
-subjects = [301:307, 310:312, 314:320, 322:326, 328, 329]; % subjects that should be included in grand average
+subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 cfg = [];
 cfg.keeptrials='yes';
