@@ -19,11 +19,27 @@ for i = 1:length(subjects)
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
 end
 
+% load these files for the future, so they don't have to be read in again 
+save('Condition1.mat','-struct','Condition1');
+save('Condition2.mat','-struct','Condition2');
+
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='yes';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+
+% different way of calculating average
+cfg = [];
+cfg.parameter = 'avg';
+cfg.operation = 'add';
+cond1sum = ft_math(cfg, Condition1{:});
+cond12sum = ft_math(cfg, Condition2{:});
+cfg = [];
+cfg.parameter = 'divide';
+cfg.scalar = 27;
+cond1 = ft_math(cfg, cond1sum.avg);
+cond2 = ft_math(cfg, cond2sum.avg);
 
 % plotting average
 cfg = [];
