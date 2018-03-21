@@ -2,13 +2,13 @@
 
 subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
-%cd('/Volumes/wrkgrp/STD-Back-Up-Exp2-EEG') %
+cd('/Volumes/wrkgrp/STD-Back-Up-Exp2-EEG') %
 cfg = [];
 %cfg.keeptrials='yes';
 cfg.baseline = [-0.2 0];
 
-Condition1 = cell(1,27);
-Condition2 = cell(1,27);
+Condition1 = cell(27,50);
+Condition2 = cell(27,50);
 
 for i = 1:length(subjects)
     % condition 1 for each participant
@@ -23,23 +23,27 @@ for i = 1:length(subjects)
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
 end
 
+% load these files for the future, so they don't have to be read in again 
+save('Condition1.mat','-struct','Condition1');
+save('Condition2.mat','-struct','Condition2');
+
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='yes';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 
-%% different way of calculating average
-%cfg = [];
-%cfg.parameter = 'avg';
-%cfg.operation = 'add';
-%cond1sum = ft_math(cfg, Condition1{:});
-%cond12sum = ft_math(cfg, Condition2{:});
-%cfg = [];
-%cfg.parameter = 'divide';
-%cfg.scalar = 27;
-%cond1 = ft_math(cfg, cond1sum.avg);
-%cond2 = ft_math(cfg, cond2sum.avg);
+% different way of calculating average
+cfg = [];
+cfg.parameter = 'avg';
+cfg.operation = 'add';
+cond1sum = ft_math(cfg, Condition1{:});
+cond12sum = ft_math(cfg, Condition2{:});
+cfg = [];
+cfg.parameter = 'divide';
+cfg.scalar = 27;
+cond1 = ft_math(cfg, cond1sum.avg);
+cond2 = ft_math(cfg, cond2sum.avg);
 
 % plotting average
 cfg = [];
