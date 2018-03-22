@@ -16,6 +16,7 @@ for i = 1:length(subjects)
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
 end
+%save('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\Condition1', 'Condition1', '-v7.3')
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='yes';
