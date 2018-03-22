@@ -44,6 +44,7 @@ cfg.keepindividuals='yes';
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 clear Condition2
 
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');
 % plotting average
 cfg = [];
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
