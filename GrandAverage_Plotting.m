@@ -1,45 +1,45 @@
 %% Loading all preprocessed data 
 
 subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
-cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
+%cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 %cd('/Volumes/wrkgrp/STD-Back-Up-Exp2-EEG') %
 cfg = [];
-%cfg.keeptrials='yes';
+cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
 
 Condition1 = cell(1,27);
-Condition2 = cell(1,27);
-
 for i = 1:length(subjects)
     % condition 1 for each participant
-    filename1 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1');
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
-    % condition 2 for each participant
-    filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
-    dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
-    Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
+    clear dummy
 end
-
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='yes';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
-cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+clear Condition1
 
-%% different way of calculating average
-%cfg = [];
-%cfg.parameter = 'avg';
-%cfg.operation = 'add';
-%cond1sum = ft_math(cfg, Condition1{:});
-%cond12sum = ft_math(cfg, Condition2{:});
-%cfg = [];
-%cfg.parameter = 'divide';
-%cfg.scalar = 27;
-%cond1 = ft_math(cfg, cond1sum.avg);
-%cond2 = ft_math(cfg, cond2sum.avg);
+% load data Condition 2
+cfg = [];
+cfg.keeptrials='no';
+cfg.baseline = [-0.2 0];
+Condition2 = cell(1,27);
+for i = 1:length(subjects)
+    % condition 2 for each participant
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
+    dummy2 = load(filename2);
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
+    clear dummy2
+end
+% grand-average over subjects per condition 
+cfg = [];
+cfg.keepindividuals='yes';
+cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+clear Condition2
 
 % plotting average
 cfg = [];
