@@ -14,7 +14,8 @@ for i = 1:length(subjects)
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
-    clear dummy
+    clear dummy filename1
+    disp(subjects(i));
 end
 %save('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\Condition1', 'Condition1', '-v7.3')
 % grand-average over subjects per condition 
@@ -34,7 +35,8 @@ for i = 1:length(subjects)
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
-    clear dummy2
+    clear dummy2 filename2
+    disp(subjects(i));
 end
 % grand-average over subjects per condition 
 cfg = [];
