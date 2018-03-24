@@ -89,8 +89,8 @@ set(gca,'YDir','reverse');
 
 
 subplot(8,8,10);
-plot ((cond1.time)*1000, cond1.avg(28,:), 'r', (cond1.time)*1000, cond2.avg(28,:), 'k');
-title('F3');
+plot ((cond1.time)*1000, cond1.avg(54,:), 'r', (cond1.time)*1000, cond2.avg(54,:), 'k');
+title('F5');
 ylim([-10 10]);
 xlim([-200 1200]); 
 hold on
@@ -129,8 +129,8 @@ line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
 subplot(8,8,14);
-plot ((cond1.time)*1000, cond1.avg(2,:), 'r', (cond1.time)*1000, cond2.avg(2,:), 'k');
-title('F4');
+plot ((cond1.time)*1000, cond1.avg(33,:), 'r', (cond1.time)*1000, cond2.avg(33,:), 'k');
+title('F6');
 ylim([-10 10]);
 xlim([-200 1200]); 
 hold on
@@ -418,6 +418,16 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
+subplot(8,8,51);
+plot ((cond1.time)*1000, cond1.avg(44,:), 'r', (cond1.time)*1000, cond2.avg(44,:), 'k');
+title('PO3');
+ylim([-10 10]);
+xlim([-200 1200]); 
+hold on
+line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
+line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
+set(gca,'YDir','reverse');
+
 subplot(8,8,52);
 plot ((cond1.time)*1000, cond1.avg(43,:), 'r', (cond1.time)*1000, cond2.avg(43,:), 'k');
 title('POz');
@@ -428,9 +438,9 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,59);
-plot ((cond1.time)*1000, cond1.avg(15,:), 'r', (cond1.time)*1000, cond2.avg(15,:), 'k');
-title('O1');
+subplot(8,8,53);
+plot ((cond1.time)*1000, cond1.avg(39,:), 'r', (cond1.time)*1000, cond2.avg(39,:), 'k');
+title('PO4');
 ylim([-10 10]);
 xlim([-200 1200]); 
 hold on
@@ -438,25 +448,35 @@ line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
 line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
-subplot(8,8,60);
-plot ((cond1.time)*1000, cond1.avg(14,:), 'r', (cond1.time)*1000, cond2.avg(14,:), 'k');
-title('Oz');
-ylim([-10 10]);
-xlim([-200 1200]); 
-hold on
-line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
-line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
-set(gca,'YDir','reverse');
-
-subplot(8,8,61);
-plot ((cond1.time)*1000, cond1.avg(10,:), 'r', (cond1.time)*1000, cond2.avg(10,:), 'k');
-title('O2');
-ylim([-10 10]);
-xlim([-200 1200]); 
-hold on
-line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
-line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
-set(gca,'YDir','reverse');
+% subplot(8,8,59);
+% plot ((cond1.time)*1000, cond1.avg(15,:), 'r', (cond1.time)*1000, cond2.avg(15,:), 'k');
+% title('O1');
+% ylim([-10 10]);
+% xlim([-200 1200]); 
+% hold on
+% line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
+% line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
+% set(gca,'YDir','reverse');
+% 
+% subplot(8,8,60);
+% plot ((cond1.time)*1000, cond1.avg(14,:), 'r', (cond1.time)*1000, cond2.avg(14,:), 'k');
+% title('Oz');
+% ylim([-10 10]);
+% xlim([-200 1200]); 
+% hold on
+% line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
+% line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
+% set(gca,'YDir','reverse');
+% 
+% subplot(8,8,61);
+% plot ((cond1.time)*1000, cond1.avg(10,:), 'r', (cond1.time)*1000, cond2.avg(10,:), 'k');
+% title('O2');
+% ylim([-10 10]);
+% xlim([-200 1200]); 
+% hold on
+% line('XData', [-200 1200], 'YData', [0 0], 'LineWidth', 1);
+% line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
+% set(gca,'YDir','reverse');
 
 h = get(gca,'Children');
 v = [h(1) h(3)];
