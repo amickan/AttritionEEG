@@ -478,8 +478,8 @@ set(gca,'YDir','reverse');
 % line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 % set(gca,'YDir','reverse');
 
-h = get(gca,'Children');
-v = [h(1) h(3)];
-legend1 = legend(v,'Interference', 'No Interference');
+%h = get(gca,'Children');
+%v = [h(1) h(3)];
+legend1 = legend('Interference', 'No Interference');
 set(legend1,...
     'Position',[0.817402439320025 0.207759699624531 0.0596115241601035 0.108208554452382]);
