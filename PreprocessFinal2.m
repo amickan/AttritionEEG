@@ -14,7 +14,7 @@ function PreprocessFinal2(pNumber)
     cfg.trialfun            = 'ft_trialfun_general';                % selecting only usable trials from the final test 
     cfg.trialdef.prestim    = 0.5;                                  % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfg.trialdef.poststim   = 1.5;                                  % time after marker in seconds (should be generous to avoid filtering artifacts)
-    cfg.stimmarkers         = {'S218', 'S219'};                     % markers marking stimulus events in the final test
+    cfg.trialdef.eventvalue = {'S218', 'S219'};                     % markers marking stimulus events in the final test
     cfg.trialdef.eventtype  = 'Stimulus';
     
     % Define trials (in cfg.trl)
@@ -50,7 +50,8 @@ function PreprocessFinal2(pNumber)
     cfgHEOG                     = [];                           % initiate new, empty cfg for the horizontal EOG preprocessing 
     cfgHEOG.dataset             = vhdr;
     cfgHEOG.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
-    cfgHEOG.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgHEOG.trialdef.eventvalue = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgHEOG.trialdef.eventtype  = 'Stimulus';
     cfgHEOG.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgHEOG.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgHEOG.reref               = 'yes';
@@ -85,7 +86,8 @@ function PreprocessFinal2(pNumber)
     cfgVEOG                     = [];
     cfgVEOG.dataset             = vhdr;
     cfgVEOG.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
-    cfgVEOG.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgVEOG.trialdef.eventvalue = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgVEOG.trialdef.eventtype  = 'Stimulus';
     cfgVEOG.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgVEOG.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgVEOG.reref               = 'yes';
@@ -120,7 +122,8 @@ function PreprocessFinal2(pNumber)
     cfgLips                     = [];
     cfgLips.dataset             = vhdr;
     cfgLips.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
-    cfgLips.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgLips.trialdef.eventvalue = {'S218', 'S219'};             % markers marking stimulus events in the final test
+    cfgLips.trialdef.eventtype  = 'Stimulus';
     cfgLips.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgLips.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgLips.reref               = 'yes';
