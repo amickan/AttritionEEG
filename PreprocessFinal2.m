@@ -15,6 +15,7 @@ function PreprocessFinal2(pNumber)
     cfg.trialdef.prestim    = 0.5;                                  % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfg.trialdef.poststim   = 1.5;                                  % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfg.stimmarkers         = {'S218', 'S219'};                     % markers marking stimulus events in the final test
+    cfg.trialdef.eventtype  = 'Stimulus';
     
     % Define trials (in cfg.trl)
     cfg                     = ft_definetrial(cfg);                  % fieldtrip function that specifies trials
