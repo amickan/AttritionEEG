@@ -4,17 +4,17 @@ function PreprocessFinal2(pNumber)
 
     % define files for this participant
     vhdr = strcat(num2str(pNumber), '\Day3\EEG\',num2str(pNumber), '.vhdr');
-    cond1out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_2_cond1');
-    cond2out = strcat('PreprocessedData\', num2str(pNumber), '_data_clean_2_cond2');
+    preprocFile = strcat('PreprocessedData_secondhalf\', num2str(pNumber), '_FinalTestPart2_data_all_preprocessed');
+    cond1out = strcat('PreprocessedData_secondhalf\', num2str(pNumber), '_data_clean_2_cond1');
+    cond2out = strcat('PreprocessedData_secondhalf\', num2str(pNumber), '_data_clean_2_cond2');
 
     % defining settings for trial selection
     cfg                     = [];
     cfg.dataset             = vhdr;                                 % raw data file name
-    cfg.trialfun            = 'ft_correct_allconditions_trialfun';  % selecting only usable trials from the final test 
+    cfg.trialfun            = 'ft_trialfun_general';                % selecting only usable trials from the final test 
     cfg.trialdef.prestim    = 0.5;                                  % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfg.trialdef.poststim   = 1.5;                                  % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfg.stimmarkers         = {'S218', 'S219'};                     % markers marking stimulus events in the final test
-    cfg.marker2             = 'S215';                                % marker for correctness
     
     % Define trials (in cfg.trl)
     cfg                     = ft_definetrial(cfg);                  % fieldtrip function that specifies trials
@@ -48,9 +48,8 @@ function PreprocessFinal2(pNumber)
     %% processing horizontal EOG
     cfgHEOG                     = [];                           % initiate new, empty cfg for the horizontal EOG preprocessing 
     cfgHEOG.dataset             = vhdr;
-    cfgHEOG.trialfun            = 'ft_correct_allconditions_trialfun';  % selecting only trials from the final test  
-    cfgHEOG.stimmarkers         = {'S208', 'S209'};             % markers marking stimulus events in the final test
-    cfgHEOG.marker2             = 'S205';                                % marker for correctness
+    cfgHEOG.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
+    cfgHEOG.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
     cfgHEOG.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgHEOG.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgHEOG.reref               = 'yes';
@@ -84,9 +83,8 @@ function PreprocessFinal2(pNumber)
     %% processing vertical EOG
     cfgVEOG                     = [];
     cfgVEOG.dataset             = vhdr;
-    cfgVEOG.trialfun            = 'ft_correct_allconditions_trialfun';  % selecting only trials from the final test  
-    cfgVEOG.stimmarkers         = {'S208', 'S209'};             % markers marking stimulus events in the final test
-    cfgVEOG.marker2             = 'S205';
+    cfgVEOG.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
+    cfgVEOG.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
     cfgVEOG.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgVEOG.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgVEOG.reref               = 'yes';
@@ -120,9 +118,8 @@ function PreprocessFinal2(pNumber)
     %% processing Lips
     cfgLips                     = [];
     cfgLips.dataset             = vhdr;
-    cfgLips.trialfun            = 'ft_correct_allconditions_trialfun';  % selecting only trials from the final test  
-    cfgLips.stimmarkers         = {'S208', 'S209'};             % markers marking stimulus events in the final test
-    cfgLips.marker2             = 'S205';
+    cfgLips.trialfun            = 'ft_trialfun_general';  % selecting only trials from the final test  
+    cfgLips.stimmarkers         = {'S218', 'S219'};             % markers marking stimulus events in the final test
     cfgLips.trialdef.prestim    = 0.5;                          % time before marker in seconds (should be generous to avoid filtering artifacts)
     cfgLips.trialdef.poststim   = 1.5;                          % time after marker in seconds (should be generous to avoid filtering artifacts)
     cfgLips.reref               = 'yes';
@@ -218,6 +215,7 @@ function PreprocessFinal2(pNumber)
     cfg.method = 'trial';
     cfg.plotlayout = '1col';
     data_clean = ft_rejectvisual(cfg, data_clean);
+    save(preprocFile, 'data_clean');
     
     %% Cut data in two conditions and save datasets seperately 
     cfg                 = [];
@@ -227,10 +225,10 @@ function PreprocessFinal2(pNumber)
     cfg.trialfun        = 'correctonly_trialfun';      % this is to only select correct trials 
     cfg.trialdef.prestim    = 0.5;              % time before marker in seconds
     cfg.trialdef.poststim   = 1.5;              % time after marker in seconds
-    cfg.marker2         = 'S205';                       % correct / incorrect response marker 
+    cfg.marker2         = 'S215';                       % correct / incorrect response marker 
     
     % trial selection crtieria for condition 1
-    cfg.marker1         = 'S208';                       % for the markers that only have two numbers you need to insert a space
+    cfg.marker1         = 'S218';                       % for the markers that only have two numbers you need to insert a space
     cfg_finaltestcond1  = ft_definetrial(cfg);
     
     % excluding trials from the new segmentation that were rejected by
@@ -245,7 +243,7 @@ function PreprocessFinal2(pNumber)
     cfg_finaltestcond1.trl = cond1;
     
     % trial selection crtieria for condition 2
-    cfg.marker1 = 'S209';
+    cfg.marker1 = 'S219';
     cfg_finaltestcond2    = ft_definetrial(cfg);
     
     % excluding trials from the new segmentation that were rejected by
@@ -270,25 +268,25 @@ function PreprocessFinal2(pNumber)
     c2 = length(data_finaltestcond2.trial);
     
     % save trial information in txt
-    fid = fopen('TrialCount_PostPreprocessing.txt','a');
+    fid = fopen('TrialCount_PostPreprocessing_SecondHalf.txt','a');
     formatSpec = '%d\t%d\t%d\n';
     fprintf(fid,formatSpec,pNumber,c1,c2);
     
     % calculating average for this pp 
-    cfg = [];
-    cfg.keeptrials='yes';
-    cond1 = ft_timelockanalysis(cfg, data_finaltestcond1);
-    cond2 = ft_timelockanalysis(cfg, data_finaltestcond2);
+    %cfg = [];
+    %cfg.keeptrials='yes';
+    %cond1 = ft_timelockanalysis(cfg, data_finaltestcond1);
+    %cond2 = ft_timelockanalysis(cfg, data_finaltestcond2);
     % plotting average
-    cfg = [];
-    cfg.layout = 'actiCAP_64ch_Standard2.mat';
-    cfg.interactive = 'yes';
+    %cfg = [];
+    %cfg.layout = 'actiCAP_64ch_Standard2.mat';
+    %cfg.interactive = 'yes';
     %cfg.showoutline = 'yes';
-    cfg.showlabels = 'yes'; 
+    %cfg.showlabels = 'yes'; 
     %cfg.colorbar = 'yes';
-    cfg.fontsize = 6; 
+    %cfg.fontsize = 6; 
     %cfg.ylim = [-10 10];
-    ft_multiplotER(cfg, cond1, cond2);
+    %ft_multiplotER(cfg, cond1, cond2);
     
     disp('##############################################');
     disp(['## Done preprocessing PP_', num2str(pNumber),' ################']);
