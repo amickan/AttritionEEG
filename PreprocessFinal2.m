@@ -155,6 +155,11 @@ function PreprocessFinal2(pNumber)
     cfg = [];
     data_all = ft_appenddata(cfg, data_eeg, data_HEOG, data_VEOG, data_lips);
     data_raw = ft_appenddata(cfg, data_eeg_raw, data_HEOG_raw, data_VEOG_raw, data_lips);
+    % Add behavioral information matrix to the trialinfo matrix for later
+    behavFilename = strcat(num2str(pNumber), '_FinalTestMatrix.txt');
+    behav = load(behavFilename[71:140]); 
+    data_all.trialinfo = [data_all.trialinfo behav];
+
 
     %% Artifact rejection 
     % automatic artifact rejection
