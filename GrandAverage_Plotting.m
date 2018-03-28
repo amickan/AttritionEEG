@@ -20,7 +20,7 @@ end
 %save('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\Condition1', 'Condition1', '-v7.3')
 % grand-average over subjects per condition 
 cfg = [];
-cfg.keepindividuals='yes';
+cfg.keepindividuals='no';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 clear Condition1
 
@@ -40,7 +40,7 @@ for i = 1:length(subjects)
 end
 % grand-average over subjects per condition 
 cfg = [];
-cfg.keepindividuals='yes';
+cfg.keepindividuals='no';
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 clear Condition2
 
