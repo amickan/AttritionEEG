@@ -6,6 +6,7 @@ require(reshape)
 require(data.table)
 
 A = c(301:329)
+#A = c(301:308, 310:326, 328, 329) # only including the participants that also enter the EEG analysis
 
 data_list <- list()
 data_list2 <- list()
@@ -21,6 +22,8 @@ for (i in 1:length(A)){
   infile3 <- paste(pNumber, "IntFamiliarization.txt", sep="_")
   infile4 <- paste(pNumber, "Familiarization_Day1.txt", sep="_")
   
+  behav <- matrix(NA,140,9)
+  
   setwd(wd2)
   currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
   #as.numeric(gsub(",",".", currentFile$RT_new))
@@ -35,11 +38,20 @@ for (i in 1:length(A)){
   ## marking unlearned words as missing values in posttest ##
   for (j in 1:nrow(currentFile)) {
     pos <- which(tolower(as.character(currentFile2$Item )) == tolower(as.character(currentFile$Item[j])))
+    behav[pos,1] <- currentFile2$Trial_nr[pos]
+    behav[pos,2]<- currentFile2$Condition[pos]
+    behav[pos,3]<- currentFile2$VoiceOnset[pos]
+    behav[pos,4]<- currentFile2$TypeError[pos]
     if (currentFile$Error[j] == 1) {
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
-      currentFile2$PhonIncorrect[pos]<-NA}
+      currentFile2$PhonIncorrect[pos]<-NA
+      behav[pos,5]<- 1
+      behav[pos,9]<- 0} else {
+      behav[pos,5]<- 0
+      behav[pos,9]<- 1
+      }
   }
   
   if (length(currentFile2[ifelse(is.na(currentFile2$Error),
@@ -63,7 +75,10 @@ for (i in 1:length(A)){
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
-      currentFile2$PhonIncorrect[pos]<-NA}
+      currentFile2$PhonIncorrect[pos]<-NA
+      behav[pos,6]<-1
+      behav[pos,9]<- 0} else{
+      behav[pos,6]<-0}
   }
   
   setwd(wd4)
@@ -75,7 +90,10 @@ for (i in 1:length(A)){
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
-      currentFile2$PhonIncorrect[pos]<-NA}
+      currentFile2$PhonIncorrect[pos]<-NA
+      behav[pos,7]<-1
+      behav[pos,9]<- 0} else{
+      behav[pos,7]<-0}
   }
   
   data_list2[[i]] <- currentFile2
@@ -83,8 +101,16 @@ for (i in 1:length(A)){
   for (l in 1:nrow(currentFile2)) {
     if (currentFile2$Error[l] == 1 || is.na(currentFile2$Error[l])) {
       currentFile2$ReadIn[l] <- 0
+      behav[l,8]<-0
     } else {
       currentFile2$ReadIn[l] <- 1
+      behav[l,8]<-1
+    }
+  }
+  
+  for (l in 1:nrow(behav)) {
+    if (is.na(behav[l,6]) == T) {
+      behav[l,6] <- 0
     }
   }
   
@@ -92,6 +118,12 @@ for (i in 1:length(A)){
   setwd(wd1)
   outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
   write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
+  
+  # safe the file with the relevant behavioral information as text (for preprocessing script)
+  # columns as follows: TrialNr, Condition, VoiceOnset, TypeError, Not learned in Spanish, unknown in English, known in Italian, Read in
+  setwd(wd1)
+  outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
+  write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
   
   print(A[i])
   
@@ -218,3 +250,65 @@ summary(modelRT)
 # random slope model for RTs
 modelRT2 <- lmer(RTlog~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), data = post1)
 summary(modelRT2)
+
+### Forgetting effect ####
+# difference between error rates in interference and no interfernce condition
+forgetting <- data.frame(tapply(post1$Ratio, list(post1$Subject_nr, post1$Condition), mean, na.rm = T))
+forgetting$Difference <- forgetting$X2 - forgetting$X1
+forgetting2 <- data.frame(tapply(post1$VoiceOnset, list(post1$Subject_nr, post1$Condition), mean, na.rm = T))
+forgetting2$Difference <- forgetting2$X1 - forgetting2$X2
+forgetting$ForgettingRT <- forgetting2$Difference
+forgetting$Interference_RT <- forgetting2$X1
+forgetting$NoInterference_RT <- forgetting2$X2
+colnames(forgetting) <- c("Interference_Error", "NoInterference_Error","Difference_Error", "Difference_RT", "Interference_RT","NoInterference_RT")
+
+# read in the EEG average per condition
+eeg <- read.delim("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/ConditionAverages.txt", header = F)
+
+# add the EEg data to the forgetting matrix
+forgetting$EEG_int <- eeg$V2
+forgetting$EEG_noint <- eeg$V3
+forgetting$EEG_diff <- eeg$V2-eeg$V3
+
+# calculate correlation of eeg difference and forgetting effect (accuracy and RTs seperately)
+library(Hmisc)
+rcorr(as.matrix(forgetting), type="pearson")
+# plot correlation 
+ggplot(forgetting, aes(x=Difference_Error, y=EEG_diff),label=row.names(forgetting)) +
+  geom_point() +
+  geom_text(aes(label=row.names(forgetting)),hjust=0, vjust=0) +
+  geom_smooth(method='lm') +
+  xlab("Accuracy difference between interference and no interference condition") +
+  ylab("EEG amplitude difference between conditions (averaged between 200-400ms, over Pz,P1,P2,Poz,Po3,Po4)") +
+  labs(title="All participants")
+
+ggplot(forgetting, aes(x=Difference_RT, y=EEG_diff), label=row.names(forgetting)) +
+  geom_point() +
+  geom_text(aes(label=row.names(forgetting)),hjust=0, vjust=0) +
+  geom_smooth(method='lm') +
+  xlab("RT difference between interference and no interference condition") +
+  ylab("EEG amplitude difference between conditions (averaged between 200-400ms, over Pz,P1,P2,Poz,Po3,Po4)") +
+  labs(title="All participants")
+
+# leaving out extreme participants, even though those are the ones driving the behavioral effect
+forgetting[-c(3,9,10,11,19,20,24),]->forgettingAcc
+forgetting[-c(2,10,11,18,22,24,27),]->forgettingRT
+
+rcorr(as.matrix(forgettingAcc), type="pearson")
+rcorr(as.matrix(forgettingRT), type="pearson")
+# plot correlation 
+ggplot(forgettingAcc, aes(x=Difference_Error, y=EEG_diff),label=row.names(forgettingAcc)) +
+  geom_point() +
+  geom_text(aes(label=row.names(forgettingAcc)),hjust=0, vjust=0) +
+  geom_smooth(method='lm') +
+  xlab("Accuracy difference between interference and no interference condition") +
+  ylab("EEG amplitude difference between conditions (averaged between 200-400ms, over Pz,P1,P2,Poz,Po3,Po4)") +
+  labs(title="Leaving out outliers")
+
+ggplot(forgetting, aes(x=Difference_RT, y=EEG_diff), label=row.names(forgetting)) +
+  geom_point() +
+  geom_text(aes(label=row.names(forgetting)),hjust=0, vjust=0) +
+  geom_smooth(method='lm') +
+  xlab("RT difference between interference and no interference condition") +
+  ylab("EEG amplitude difference between conditions (averaged between 200-400ms, over Pz,P1,P2,Poz,Po3,Po4)") +
+  labs(title="Leaving out outliers")

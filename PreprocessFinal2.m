@@ -156,8 +156,9 @@ function PreprocessFinal2(pNumber)
     data_all = ft_appenddata(cfg, data_eeg, data_HEOG, data_VEOG, data_lips);
     data_raw = ft_appenddata(cfg, data_eeg_raw, data_HEOG_raw, data_VEOG_raw, data_lips);
     % Add behavioral information matrix to the trialinfo matrix for later
-    behavFilename = strcat(num2str(pNumber), '_FinalTestMatrix.txt');
-    behav = load(behavFilename[71:140]); 
+    behavFilename = strcat(num2str(pNumber), '\Day3\', num2str(pNumber),'_FinalTest\', num2str(pNumber),'_BehavMatrixFinalTest.txt');
+    behav = load(behavFilename);
+    behav = behav(71:140,:);
     data_all.trialinfo = [data_all.trialinfo behav];
 
 
@@ -225,56 +226,22 @@ function PreprocessFinal2(pNumber)
     cfg.plotlayout = '1col';
     data_clean = ft_rejectvisual(cfg, data_clean);
     save(preprocFile, 'data_clean');
+    % load(preprocFile)  % if you want to start from here
     
     %% Cut data in two conditions and save datasets seperately 
     cfg                 = [];
-    cfg.dataset         = vhdr;
-    cfg.headerfile      = vhdr;                    % this needs to be specified, otherwise it doesn't work
-    % trial selection criteria general
-    cfg.trialfun        = 'correctonly_trialfun';      % this is to only select correct trials 
-    cfg.trialdef.prestim    = 0.5;              % time before marker in seconds
-    cfg.trialdef.poststim   = 1.5;              % time after marker in seconds
-    cfg.marker2         = 'S215';                       % correct / incorrect response marker 
+    cfg.trials          = find((data_clean.trialinfo(:,9) == 1)& (data_clean.trialinfo(:,3) == 1)); 
+    data_cond1          = ft_selectdata(cfg, data_clean);
+    cfg                 = [];
+    cfg.trials          = find((data_clean.trialinfo(:,9) == 1)& (data_clean.trialinfo(:,3) == 2)); 
+    data_cond2          = ft_selectdata(cfg, data_clean);
     
-    % trial selection crtieria for condition 1
-    cfg.marker1         = 'S218';                       % for the markers that only have two numbers you need to insert a space
-    cfg_finaltestcond1  = ft_definetrial(cfg);
-    
-    % excluding trials from the new segmentation that were rejected by
-    % artifact rejection
-    diff = setdiff(cfg_finaltestcond1.trl(:,1),data_clean.sampleinfo(:,1));
-    cond1 = setdiff(cfg_finaltestcond1.trl(:,1),diff);
-    for i = 1:length(cond1)
-      num = find(ismember(cfg_finaltestcond1.trl(:,1),cond1(i)));
-      cond1(i,2)=cfg_finaltestcond1.trl(num,2);
-      cond1(i,3)=cfg_finaltestcond1.trl(num,3);
-    end
-    cfg_finaltestcond1.trl = cond1;
-    
-    % trial selection crtieria for condition 2
-    cfg.marker1 = 'S219';
-    cfg_finaltestcond2    = ft_definetrial(cfg);
-    
-    % excluding trials from the new segmentation that were rejected by
-    % artifact rejection
-    diff2 = setdiff(cfg_finaltestcond2.trl(:,1),data_clean.sampleinfo(:,1));
-    cond2 = setdiff(cfg_finaltestcond2.trl(:,1),diff2);
-    for i = 1:length(cond2)
-      num = find(ismember(cfg_finaltestcond2.trl(:,1),cond2(i)));
-      cond2(i,2)=cfg_finaltestcond2.trl(num,2);
-      cond2(i,3)=cfg_finaltestcond2.trl(num,3);
-    end
-    cfg_finaltestcond2.trl = cond2;
-
-    %cut the trials out of the continuous data segment 
-    data_finaltestcond1     = ft_redefinetrial(cfg_finaltestcond1, data_clean);
-    data_finaltestcond2     = ft_redefinetrial(cfg_finaltestcond2, data_clean);
-    save(cond1out, 'data_finaltestcond1');
-    save(cond2out, 'data_finaltestcond2');
+    save(cond1out, 'data_cond1');
+    save(cond2out, 'data_cond2');
 
     % document how many trials were kept for later analysis
-    c1 = length(data_finaltestcond1.trial);
-    c2 = length(data_finaltestcond2.trial);
+    c1 = length(data_cond1.trial);
+    c2 = length(data_cond2.trial);
     
     % save trial information in txt
     fid = fopen('TrialCount_PostPreprocessing_SecondHalf.txt','a');
