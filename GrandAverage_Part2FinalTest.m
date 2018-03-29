@@ -7,7 +7,7 @@ cfg = [];
 cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
 
-Condition1 = cell(1,27);
+Condition1 = cell(1,16);
 for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
@@ -28,7 +28,7 @@ clear Condition1
 cfg = [];
 cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
-Condition2 = cell(1,27);
+Condition2 = cell(1,16);
 for i = 1:length(subjects)
     % condition 2 for each participant
     filename2 = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
