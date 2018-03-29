@@ -1,13 +1,13 @@
 %% Loading all preprocessed data 
 
-subjects = [301:308, 310:317]; % subjects that should be included in grand average
+subjects = [301:308, 310:325]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 %cd('/Volumes/wrkgrp/STD-Back-Up-Exp2-EEG') %
 cfg = [];
 cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
 
-Condition1 = cell(1,16);
+Condition1 = cell(1,24);
 for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
@@ -28,7 +28,7 @@ clear Condition1
 cfg = [];
 cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
-Condition2 = cell(1,16);
+Condition2 = cell(1,24);
 for i = 1:length(subjects)
     % condition 2 for each participant
     filename2 = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');

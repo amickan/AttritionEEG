@@ -21,7 +21,7 @@ end
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='no';
-cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
+cond1A = ft_timelockgrandaverage(cfg, Condition1{:});
 clear Condition1
 
 % load data Condition 2
@@ -41,7 +41,7 @@ end
 % grand-average over subjects per condition 
 cfg = [];
 cfg.keepindividuals='no';
-cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+cond2A = ft_timelockgrandaverage(cfg, Condition2{:});
 clear Condition2
 
 % plotting average
@@ -349,8 +349,8 @@ line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
 subplot(8,8,41);
-plot ((cond1.time)*1000, cond1.avg(45,:), 'r', (cond1.time)*1000, cond2.avg(45,:), 'k');
-title('P5');
+plot ((cond1.time)*1000, cond1.avg(16,:), 'r', (cond1.time)*1000, cond2.avg(16,:), 'k');
+title('P7');
 ylim([-10 10]);
 xlim([-200 1200]); 
 hold on
@@ -409,8 +409,8 @@ line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 set(gca,'YDir','reverse');
 
 subplot(8,8,47);
-plot ((cond1.time)*1000, cond1.avg(36,:), 'r', (cond1.time)*1000, cond2.avg(36,:), 'k');
-title('P6');
+plot ((cond1.time)*1000, cond1.avg(9,:), 'r', (cond1.time)*1000, cond2.avg(9,:), 'k');
+title('P8');
 ylim([-10 10]);
 xlim([-200 1200]); 
 hold on
@@ -478,8 +478,8 @@ set(gca,'YDir','reverse');
 % line('XData', [0 0], 'YData', [-10 10], 'LineWidth', 0.5);
 % set(gca,'YDir','reverse');
 
-h = get(gca,'Children');
-v = [h(1) h(3)];
-legend1 = legend(v,'Interference', 'No Interference');
+%h = get(gca,'Children');
+%v = [h(1) h(3)];
+legend1 = legend('Interference', 'No Interference');
 set(legend1,...
     'Position',[0.817402439320025 0.207759699624531 0.0596115241601035 0.108208554452382]);
