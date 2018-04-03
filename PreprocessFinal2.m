@@ -271,4 +271,4 @@ function PreprocessFinal2(pNumber)
     disp('##############################################');
     
     % change this to your Github folder directory
-    cd('U:\PhD\EXPERIMENT 2 - EEG\EEG-analysis');  
+    cd('C:\Users\Beatrice\Downloads\fieldtrip-20180128\EEG-analysis-Final');  
