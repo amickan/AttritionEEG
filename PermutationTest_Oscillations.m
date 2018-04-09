@@ -64,9 +64,9 @@ neighbours                  = ft_prepare_neighbours(cfg_neighb, Condition1{1});
 % Permutation test
 cfg = [];
 cfg.channel          = {'EEG'};
-cfg.latency          = [0 1];
+cfg.latency          = [0.5 1];
 cfg.method           = 'montecarlo';
-cfg.frequency        = [4 10];%'all';
+cfg.frequency        = [6 8];%'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';
 cfg.correctm         = 'cluster';
 cfg.clusteralpha     = 0.05;
@@ -74,7 +74,7 @@ cfg.clusterstatistic = 'maxsum';
 cfg.minnbchan        = 2;
 cfg.tail             = 0;
 cfg.clustertail      = 0;
-cfg.alpha            = 0.1;
+cfg.alpha            = 0.05;
 cfg.numrandomization = 500;
 cfg.neighbours          = neighbours; 
 

@@ -4,7 +4,8 @@ subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in g
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 cfg = [];
 cfg.keeptrials='yes';
-cfg.baseline = [-0.2 0];
+cfg.baseline = 'yes';
+cfg.baselinewind = [-0.2 0];
 
 for i = 1:length(subjects)
     % condition 1 for each participant

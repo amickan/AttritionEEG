@@ -312,3 +312,37 @@ ggplot(forgetting, aes(x=Difference_RT, y=EEG_diff), label=row.names(forgetting)
   xlab("RT difference between interference and no interference condition") +
   ylab("EEG amplitude difference between conditions (averaged between 200-400ms, over Pz,P1,P2,Poz,Po3,Po4)") +
   labs(title="Leaving out outliers")
+
+
+#### Adaptive learning task ####
+# count number of exposure and learning success after the frist two rounds of this test
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day2/",pNumber,"_AdapPicNaming", sep="")
+  setwd(wd1)
+  infile1 <- paste(pNumber,"AdapPicNamingDay2.txt",sep="_")
+  
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  
+  if (length(currentFile[currentFile$Error == 999,]$Error) > 0){
+    currentFile[currentFile$Error == 999,]$Error<-1
+  }
+  
+  data_list[[i]] <- currentFile
+  
+  print(A[i])
+}
+adap <- rbindlist(data_list)
+blocks <- data.frame(tapply(adap$Block_nr, adap$Subject_nr,max)) # how many blocks did the pp go through
+
+#### Exposure per item/pp ####
+exposures<-data.frame(table(adap$Item, adap$Condition))
+#exposures <- exposures[exposures$Freq != 0,]
+exposures$Freq <- exposures$Freq + 11
+exposures2<-data.frame(table(adap$Subject, adap$Condition))
+exposures2[exposures2$Var2==2,]$Freq <- exposures2[exposures2$Var2==2,]$Freq +8
+cond1 <- exposures2[exposures2$Var2==1,]$Freq
+cond2 <- exposures2[exposures2$Var2==2,]$Freq
+t.test(cond1,cond2)
+reshape(exposures2, idvar = "Var1", timevar = "Var2", direction = "wide")
