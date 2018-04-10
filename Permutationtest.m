@@ -1,22 +1,23 @@
 % Loading all preprocessed data 
-
-subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
-cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
+subjects = [301:308, 310:326, 328, 329];  % subjects that should be included in grand average
 cfg = [];
-cfg.keeptrials='yes';
+cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
-
+Condition1 = cell(1,27);
+Condition2 = cell(1,27);
 for i = 1:length(subjects)
     % condition 1 for each participant
-    filename1 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
     dummy = load(filename1);
-    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond1);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
+    clear dummy
     % condition 2 for each participant
-    filename2 = strcat('PreprocessedData\', num2str(subjects(i)), '_data_clean_cond2');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
     dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond2);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
+    clear dummy2
 end
 
 %% Neighbourhood definition
