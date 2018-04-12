@@ -82,14 +82,14 @@ cfg.method           = 'montecarlo';
 cfg.frequency        = [6 8];%'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';
 cfg.correctm         = 'cluster';
-cfg.clusteralpha     = 0.05;
+cfg.clusteralpha     = 0.1;
 cfg.clusterstatistic = 'maxsum';
 cfg.minnbchan        = 2;
 cfg.tail             = 0;
 cfg.clustertail      = 0;
 cfg.correcttail      = 'prob';
 cfg.alpha            = 0.05;
-cfg.numrandomization = 500;
+cfg.numrandomization = 1000;
 cfg.neighbours          = neighbours; 
 % cfg.avgovertime = 'yes';
 % cfg.avgoverfreq = 'yes';
@@ -115,7 +115,7 @@ cfg.ivar                = 2;                                % number or list wit
 
 null = cond1;
 null.powspctrm = zeros(size(cond1.powspctrm));
-[stat2]                 = ft_freqstatistics(cfg, effect, null);
+[stat]                 = ft_freqstatistics(cfg, effect, null);
 
 %%
 % plot the result
@@ -124,7 +124,7 @@ cfg.alpha  = 0.05;
 cfg.parameter = 'stat';
 cfg.zlim   = [-4 4];
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
-ft_multiplotTFR(cfg, stat2);
+ft_multiplotTFR(cfg, stat);
 
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];
