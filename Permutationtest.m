@@ -20,35 +20,34 @@ for i = 1:length(subjects)
     clear dummy2
 end
 
-%% Neighbourhood definition
+% Create neighbourhood structure
 cfg_neighb                  = [];
 cfg_neighb.method           = 'distance';        
 cfg_neighb.channel          = 'EEG';
 cfg_neighb.layout           = 'actiCAP_64ch_Standard2.mat';
 cfg_neighb.feedback         = 'yes';
-cfg_neighb.neighbourdist    = 0.15;                                         % higher number: more is linked!
+cfg_neighb.neighbourdist    = 0.15; % higher number: more is linked!
 neighbours                  = ft_prepare_neighbours(cfg_neighb, Condition1{1});
 
-%% cluster based permutation test
-% configuration settings
+% Stats settings
 cfg                     = [];
-cfg.channel             = 'EEG';        % cell-array with selected channel labels
-cfg.latency             = [0 1];      % time interval over which the experimental conditions must be compared (in seconds)
-cfg.method              = 'montecarlo'; % use the Monte Carlo Method to calculate the significance probability
-cfg.statistic           = 'depsamplesT';
+cfg.method              = 'montecarlo';       
+cfg.channel             = {'EEG'};     
+cfg.latency             = [0 1];      
+cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
-cfg.clusteralpha        = 0.05;         % alpha level of the sample-specific test statistic that will be used for thresholding
-cfg.clusterstatistic    = 'maxsum';     % test statistic that will be evaluated under the permutation distribution. 
-cfg.minnbchan           = 2;            % minimum number of neighborhood channels that is required for a selected sample to be included in the clustering algorithm (default=0).                                        
+cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding
+cfg.clusterstatistic    = 'maxsum';                         % test statistic that will be evaluated under the permutation distribution. 
+%cfg.minnbchan          = 2;                                % minimum number of neighborhood channels that is required for a selected sample to be included in the clustering algorithm (default=0).
 cfg.neighbours          = neighbours;   
-cfg.tail                = 0;            % -1, 1 or 0 (default = 0); one-sided or two-sided test
+cfg.tail                = 0;                                % -1, 1 or 0 (default = 0); one-sided or two-sided test
 cfg.clustertail         = 0;
-cfg.alpha               = 0.05;        % alpha level of the permutation test
-cfg.numrandomization    = 500;         % number of draws from the permutation distribution
-cfg.correcttail         = 'prob';      % correcting for two-sided test
+cfg.alpha               = 0.05;                            % alpha level of the permutation test
+cfg.numrandomization    = 500;                              % number of draws from the permutation distribution
+cfg.correcttail         = 'prob';
 
-% Design matrix
-subj                    = length(subjects);           
+% Design matrix - within subject design
+subj                    = length(subjects);                % number of participants excluding the ones with too few trials
 design                  = zeros(2,2*subj);
 for i = 1:subj
   design(1,i) = i;
@@ -59,29 +58,24 @@ end
 design(2,1:subj)        = 1;
 design(2,subj+1:2*subj) = 2;
 
-cfg.design              = design;        % design matrix 
-cfg.uvar                = 1;             % unit variable
-cfg.ivar                = 2;             % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
+cfg.design              = design;                           % design matrix EDIT FOR WITHIN
+cfg.uvar                = 1;                                % unit variable
+cfg.ivar                = 2;                                % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
 
-[stat] = ft_timelockstatistics(cfg, Condition1{:}, Condition2{:});
+[stat]                  = ft_timelockstatistics(cfg, Condition1{:}, Condition2{:});
 
 %save stat_ERP stat;
 
-%% plot the results
+% grand average
+cfg = [];
+cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
+cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
 
-%use of timelock grand average
-cfg                 = [];
-cfg.channel         = 'all';
-cfg.latency         = [0 1];
-cfg.parameter       = 'avg';
-cond1               = ft_timelockgrandaverage(cfg, Condition1{:});
-cond2               = ft_timelockgrandaverage(cfg, Condition2{:});
-
-% plots
-cfg                 = [];
-cfg.operation       = 'subtract';
-cfg.parameter       = 'avg';
-contrast            = ft_math(cfg, cond1, cond2);
+% Then take the difference of the averages using ft_math
+cfg  = [];
+cfg.operation = 'subtract';
+cfg.parameter = 'avg';
+raweffect = ft_math(cfg,cond1,cond2);
 
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];
@@ -116,14 +110,14 @@ if numberofsignclusters > 0
         endtime = stat.time(max(foundy));
         
         %%% Topoplot for the cluster 
-        %figure;
+        figure;
         %colormap(redblue);
         %colorbar('eastoutside');
-        %cfg = [];
-        %cfg.xlim=[starttime endtime];  % in seconds!
+        cfg = [];
+        cfg.xlim=[starttime endtime];  % in seconds!
         %cfg.zlim = [-3 3];
-        %cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        %ft_topoplotER(cfg, raweffect);
+        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        ft_topoplotER(cfg, raweffect);
         
         disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
@@ -144,8 +138,8 @@ if numberofsignclustersneg > 0
         
         %%% Topoplot for the cluster 
         figure;
-        colormap(redblue);
-        colorbar('eastoutside');
+        %colormap(redblue);
+        %colorbar('eastoutside');
         cfg = [];
         cfg.xlim=[starttime endtime];  % in seconds!
         %cfg.zlim = [-5 5];
