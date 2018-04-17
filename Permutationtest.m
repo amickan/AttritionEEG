@@ -83,34 +83,132 @@ cfg.operation       = 'subtract';
 cfg.parameter       = 'avg';
 contrast            = ft_math(cfg, cond1, cond2);
 
-figure;  
-% define parameters for plotting
-timestep            = 0.05;      %(in seconds)
-sampling_rate       = 500; 
-sample_count        = length(stat.time);
-j                   = [0:timestep:1];   % Temporal endpoints (in seconds) of the ERP average computed in each subplot
-m                   = [1:timestep*sampling_rate:sample_count];  % temporal endpoints in MEEG samples
 % get relevant (significant) values
-pos_cluster_pvals   = [stat.posclusters(:).prob];
-pos_signif_clust    = find(pos_cluster_pvals < stat.cfg.alpha);
-pos                 = ismember(stat.posclusterslabelmat, pos_signif_clust);
+pos_cluster_pvals = [stat.posclusters(:).prob];
+pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
+pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
 
-% First ensure the channels to have the same order in the average and in the statistical output.
-% This might not be the case, because ft_math might shuffle the order  
-[i1,i2]             = match_str(contrast.label, stat.label); 
+neg_cluster_pvals = [stat.negclusters(:).prob];
+neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
+neg = ismember(stat.negclusterslabelmat, neg_signif_clust); 
 
-% plot
-for k = 1:10;
-     subplot(4,5,k);   
-     cfg = [];   
-     cfg.xlim=[j(k) j(k+1)];   
-     %cfg.zlim = [-5e-14 5e-14];   
-     pos_int = zeros(numel(contrast.label),1);
-     pos_int(i1) = all(pos(i2, m(k):m(k+1)), 2);
-     cfg.highlight = 'on';
-     cfg.highlightchannel = find(pos_int);       
-     cfg.comment = 'xlim';   
-     cfg.commentpos = 'title';   
-     cfg.layout = 'actiCAP_64ch_Standard2.mat';
-     ft_topoplotER(cfg, contrast);
-end 
+% Indicate how many sign. clusters, time period of sign. clusters, channels
+% of sign. clusters
+
+select = pos_cluster_pvals < stat.cfg.alpha;
+selectneg = neg_cluster_pvals < stat.cfg.alpha;
+signclusters = pos_cluster_pvals(select);
+signclustersneg = neg_cluster_pvals(selectneg);
+numberofsignclusters = length(signclusters);
+numberofsignclustersneg = length(signclustersneg);
+disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
+disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+
+if numberofsignclusters > 0
+    for i = 1:length(signclusters)
+        disp(['Positive cluster number ', num2str(i), ' has a p value of ', num2str(signclusters(i))])
+        select = ismember(stat.posclusterslabelmat, pos_signif_clust(i));
+        pos2 = ismember (stat.posclusterslabelmat, pos_signif_clust(i));
+        [foundx,foundy] = find(select);
+        % pos_int2 = all(pos2(:, min(foundy):max(foundy)),2); % no channels are significant over the total sign. time period....
+        % find(pos_int2) % see upper comment
+        starttime = stat.time(min(foundy));
+        endtime = stat.time(max(foundy));
+        
+        %%% Topoplot for the cluster 
+        %figure;
+        %colormap(redblue);
+        %colorbar('eastoutside');
+        %cfg = [];
+        %cfg.xlim=[starttime endtime];  % in seconds!
+        %cfg.zlim = [-3 3];
+        %cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        %ft_topoplotER(cfg, raweffect);
+        
+        disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
+        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
+        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
+    end
+end
+
+if numberofsignclustersneg > 0
+    for i = 1:length(signclustersneg)
+        disp(['Negative cluster number ', num2str(i), ' has a p value of ', num2str(signclustersneg(i))])
+        selectneg = ismember(stat.negclusterslabelmat, neg_signif_clust(i));
+        pos2 = ismember (stat.negclusterslabelmat, neg_signif_clust(i));
+        [foundx,foundy] = find(selectneg);
+        % pos_int2 = all(pos2(:, min(foundy):max(foundy)),2); % no channels are significant over the total sign. time period....
+        % find(pos_int2) % see upper comment
+        starttime = stat.time(min(foundy));
+        endtime = stat.time(max(foundy));
+        
+        %%% Topoplot for the cluster 
+        figure;
+        colormap(redblue);
+        colorbar('eastoutside');
+        cfg = [];
+        cfg.xlim=[starttime endtime];  % in seconds!
+        %cfg.zlim = [-5 5];
+        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        ft_topoplotER(cfg, raweffect);
+        
+        disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
+        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
+        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
+    end
+end
+
+% define parameters for plotting
+timestep = 0.05; % in seconds, this can be changed to for example 0.02 for small time windows. otherwise, keep at 0.05
+sampling_rate = 500;
+sample_count = length(stat.time);
+j = [0:timestep:1];
+m = [1:timestep*sampling_rate:sample_count];
+
+figure;
+
+% plot positive clusters
+if numberofsignclusters > 0
+    for k = 1:(length(m)-1)
+        if (length(m)-1)>1
+            if mod((length(m)-1),2) == 0
+                subplot(2,(length(m)-1)/2,k);
+            else
+                subplot(1,(length(m)-1),k);
+            end
+        end
+        cfg = [];
+        cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
+        %cfg.ylim = [-3e-13 3e-13];
+        pos_int = all(pos(:, m(k):m(k+1)), 2);
+        cfg.highlight = 'on';
+        cfg.highlightchannel = find(pos_int);
+        cfg.comment = 'xlim';
+        cfg.commentpos = 'title';
+        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        ft_topoplotER(cfg, raweffect);
+    end
+end
+
+% plot positive clusters
+if numberofsignclustersneg > 0
+    for k = 1:(length(m)-1)
+        if (length(m)-1)>1
+            if mod((length(m)-1),2) == 0
+                subplot(2,(length(m)-1)/2,k);
+            else
+                subplot(1,(length(m)-1),k);
+            end
+        end
+        cfg = [];
+        cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
+        %cfg.ylim = [-3e-13 3e-13];
+        neg_int = all(neg(:, m(k):m(k+1)), 2);
+        cfg.highlight = 'on';
+        cfg.highlightchannel = find(neg_int);
+        cfg.comment = 'xlim';
+        cfg.commentpos = 'title';
+        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        ft_topoplotER(cfg, raweffect);
+    end
+end

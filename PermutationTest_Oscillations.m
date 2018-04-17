@@ -111,7 +111,7 @@ cfg.uvar                = 1;                                % unit variable
 cfg.ivar                = 2;                                % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
 
 [stat]                  = ft_freqstatistics(cfg, Condition1{:}, Condition2{:});
-% [stat2]                 = ft_freqstatistics(cfg, cond1, cond2)
+% [stat2]               = ft_freqstatistics(cfg, cond1, cond2)
 
 null = cond1;
 null.powspctrm = zeros(size(cond1.powspctrm));
@@ -147,53 +147,11 @@ disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clu
 if numberofsignclusters > 0
     for i = 1:length(signclusters)
         disp(['Positive cluster number ', num2str(i), ' has a p value of ', num2str(signclusters(i))])
-        select = ismember(stat.posclusterslabelmat, pos_signif_clust(i));
-        pos2 = ismember (stat.posclusterslabelmat, pos_signif_clust(i));
-        [foundx,foundy] = find(select);
-        % pos_int2 = all(pos2(:, min(foundy):max(foundy)),2); % no channels are significant over the total sign. time period....
-        % find(pos_int2) % see upper comment
-        starttime = stat.time(min(foundy));
-        endtime = stat.time(max(foundy));
-        
-        %%% Topoplot for the cluster 
-        figure;
-        colormap(redblue);
-        colorbar('eastoutside');
-        cfg = [];
-        cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-3 3];
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        %ft_topoplotER(cfg, raweffect);
-        
-        disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
-        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
-        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
     end
 end
 
 if numberofsignclustersneg > 0
     for i = 1:length(signclustersneg)
         disp(['Negative cluster number ', num2str(i), ' has a p value of ', num2str(signclustersneg(i))])
-        selectneg = ismember(stat.negclusterslabelmat, neg_signif_clust(i));
-        pos2 = ismember (stat.negclusterslabelmat, neg_signif_clust(i));
-        [foundx,foundy] = find(selectneg);
-        % pos_int2 = all(pos2(:, min(foundy):max(foundy)),2); % no channels are significant over the total sign. time period....
-        % find(pos_int2) % see upper comment
-        starttime = stat.time(min(foundy));
-        endtime = stat.time(max(foundy));
-        
-        %%% Topoplot for the cluster 
-        figure;
-        colormap(redblue);
-        colorbar('eastoutside');
-        cfg = [];
-        cfg.xlim=[starttime endtime];  % in seconds!
-        %cfg.zlim = [-5 5];
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        %ft_topoplotER(cfg, raweffect);
-        
-        disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
-        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
-        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
     end
 end
