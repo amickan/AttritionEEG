@@ -280,6 +280,13 @@ summary(modelRT2)
 # model comparison
 anova(modelRT,modelRT2) # random slope model is better, there is no interaction, so no need to look into rounds seperately 
 
+### but out of interest still seperate models for each round
+# Round 1
+modelRT2round1 <- lmer(log(VoiceOnset) ~ Condition + (1|Item) + (1+Condition|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post1)
+summary(modelRT2round1)
+# Round 2
+modelRT2round2 <- lmer(log(VoiceOnset) ~ Condition + (1|Item) + (1+Condition|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post2)
+summary(modelRT2round2)
 
 ### Forgetting effect ####
 # difference between error rates in interference and no interfernce condition
