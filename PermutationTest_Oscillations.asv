@@ -18,13 +18,13 @@ for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
     dummy = load(filename1);
-    Condition1{i} = ft_freqanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_freqanalysis(cfg, dummy.data_cond1);
     clear dummy
 end
 
 % grand-average over subjects per condition 
 cfg = [];
-cfg.keepindividual='no';
+cfg.keepindividual='yes';
 cond1 = ft_freqgrandaverage(cfg, Condition1{:});
 
 % frequency decomposition settings
@@ -42,7 +42,7 @@ for i = 1:length(subjects)
     % condition 2 for each participant
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
     dummy2 = load(filename2);
-    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_cond2);
     clear dummy2
 end
 
@@ -50,14 +50,19 @@ end
 eff = Condition2;
 % loop
 for i = 1:length(subjects)
-    eff{i}.pow = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((cond1.powspctrm + cond2.powspctrm)/2);
+    eff{i}.powspctrm = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
 end
 
 %%
-% grand-average over subjects per condition 
+% grand-average over subjects for condition 2
 cfg = [];
-cfg.keepindividual='no';
+cfg.keepindividual='yes';
 cond2 = ft_freqgrandaverage(cfg, Condition2{:});
+
+% grand average for weighted effect
+cfg = [];
+cfg.keepindividual='yes';
+effect = ft_freqgrandaverage(cfg, eff{:});
 
 % Create neighbourhood structure
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');
@@ -77,17 +82,17 @@ cfg.method           = 'montecarlo';
 cfg.frequency        = [6 8];%'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';
 cfg.correctm         = 'cluster';
-cfg.clusteralpha     = 0.05;
+cfg.clusteralpha     = 0.1;
 cfg.clusterstatistic = 'maxsum';
 cfg.minnbchan        = 2;
 cfg.tail             = 0;
 cfg.clustertail      = 0;
 cfg.correcttail      = 'prob';
 cfg.alpha            = 0.05;
-cfg.numrandomization = 500;
+cfg.numrandomization = 1000;
 cfg.neighbours          = neighbours; 
-% cfg.avgovertime = 'yes';
-% cfg.avgoverfreq = 'yes';
+cfg.avgovertime = 'yes';
+cfg.avgoverfreq = 'yes';
 
 % Design matrix - within subject design
 subj                    = length(subjects);                % number of participants excluding the ones with too few trials
@@ -110,16 +115,16 @@ cfg.ivar                = 2;                                % number or list wit
 
 null = cond1;
 null.powspctrm = zeros(size(cond1.powspctrm));
-[stat2]                 = ft_freqstatistics(cfg, effect, null);
+[stat]                 = ft_freqstatistics(cfg, effect, null);
 
 %%
 % plot the result
 cfg = [];
-cfg.alpha  = 0.1;
+cfg.alpha  = 0.05;
 cfg.parameter = 'stat';
 cfg.zlim   = [-4 4];
 cfg.layout = 'actiCAP_64ch_Standard2.mat';
-ft_clusterplot(cfg, stat);
+ft_multiplotTFR(cfg, stat);
 
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];

@@ -145,6 +145,7 @@ post$Ratio <- (post$PhonCorr/post$Total)*100
 
 # subset to only the first round of Final test
 post1 <- post[post$Trial_nr<71,]
+post2 <- post[post$Trial_nr>70,]
 
 ########## Plots with GGplot ###########
 require(plyr)
@@ -198,10 +199,11 @@ barplot + geom_bar(stat="identity", position=position_dodge()) +
   scale_fill_manual( "Condition", values=c("red4","grey50"),labels=c("Interference","No Interference")) +
   theme_bw()
 
-### Stats on behavioral results ###
+###### Stats on behavioral results ######
 
 require(lme4)
 require(lmerTest)
+require(lmtest)
 
 setwd("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/")
 lenwords <- read.delim("WordsLengths.txt")
@@ -221,41 +223,72 @@ post$Incorr <- post$OrigLen-post$Corr
 
 # subset data to only the first round during the FinalTest
 post1 <- post[post$Trial_nr<71,]
+post2 <- post[post$Trial_nr>70,]
 
-# random intercept model
-model <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
+#### Accuracy after interference ###
+# random intercept model on entire data set
+model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model)
 
 # random slope model
-model2 <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
+model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
+# compare models
+anova(model, model2)
+# random slope model fits the data significantly better, so we continue with this one
+# there is an effect of round, so we analyse both rounds seperately
+
+## Round 1
+# random intercept only
+modelround1a <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
+summary(modelround1a)
+# random slope 
+modelround1b <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
+summary(modelround1b)
+# compare models
+anova(modelround1a,modelround1b) # random slope model is better, so we will report this one in the paper
+
+## Round 2
+# random intercept only
+modelround2a <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post2)
+summary(modelround2a)
+# random slope 
+modelround2b <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post2)
+summary(modelround2b)
+# compare models
+anova(modelround2a,modelround2b) # random slope model is better, so we will report this one in the paper
+
+
 # simple Anova for accuracy
-anova_ratio <- aov(Ratio ~ Condition, data = post)
+# arcsine transformed data Anova
+post$NewRatio <- asin(sqrt(post$Ratio/100))
+anova_ratio <- aov(NewRatio ~ Condition, data = post[post$Block==2,])
 summary(anova_ratio)
 
-### RTs
+###### RTs #####
 # simple Anova for RTs (log-transformed)
-anova_rt <- aov(RTlog ~ Condition, data = post1)
+anova_rt <- aov(RTlog ~ Condition*Block, data = post)
 summary(anova_rt)
 
-# random intercept model for RTs (with a log link) --> does not converge though
-modelRT <- glmer(VoiceOnset~ Condition + (1|Subject_nr) + (1|Item), family= poisson(link = "log"), data = post1)
-summary(modelRT)
-
-# random intercept model for log-transformed RTs 
-modelRT <- lmer(RTlog~ Condition + (1|Subject_nr) + (1|Item), data = post1)
+## Full model on log transformed data 
+# random intercept model for RTs 
+modelRT <- lmer(log(VoiceOnset) ~ Condition*Block + (1|Subject_nr) + (1|Item), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 summary(modelRT)
 
 # random slope model for RTs
-modelRT2 <- lmer(RTlog~ Condition + (1|Subject_nr) + (1|Item) + (1+Condition|Subject_nr), data = post1)
+modelRT2 <- lmer(log(VoiceOnset) ~ Condition*Block + (1|Item) + (1+Condition|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 summary(modelRT2)
+
+# model comparison
+anova(modelRT,modelRT2) # random slope model is better, there is no interaction, so no need to look into rounds seperately 
+
 
 ### Forgetting effect ####
 # difference between error rates in interference and no interfernce condition
-forgetting <- data.frame(tapply(post1$Ratio, list(post1$Subject_nr, post1$Condition), mean, na.rm = T))
+forgetting <- data.frame(tapply(post2$Ratio, list(post2$Subject_nr, post2$Condition), mean, na.rm = T))
 forgetting$Difference <- forgetting$X2 - forgetting$X1
-forgetting2 <- data.frame(tapply(post1$VoiceOnset, list(post1$Subject_nr, post1$Condition), mean, na.rm = T))
+forgetting2 <- data.frame(tapply(post2$VoiceOnset, list(post2$Subject_nr, post2$Condition), mean, na.rm = T))
 forgetting2$Difference <- forgetting2$X1 - forgetting2$X2
 forgetting$ForgettingRT <- forgetting2$Difference
 forgetting$Interference_RT <- forgetting2$X1

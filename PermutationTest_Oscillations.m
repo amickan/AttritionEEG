@@ -82,17 +82,17 @@ cfg.method           = 'montecarlo';
 cfg.frequency        = [6 8];%'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';
 cfg.correctm         = 'cluster';
-cfg.clusteralpha     = 0.1;
+cfg.clusteralpha     = 0.05;
 cfg.clusterstatistic = 'maxsum';
 cfg.minnbchan        = 2;
 cfg.tail             = 0;
 cfg.clustertail      = 0;
 cfg.correcttail      = 'prob';
 cfg.alpha            = 0.05;
-cfg.numrandomization = 1000;
+cfg.numrandomization = 500;
 cfg.neighbours          = neighbours; 
-% cfg.avgovertime = 'yes';
-% cfg.avgoverfreq = 'yes';
+%cfg.avgovertime = 'yes';
+%cfg.avgoverfreq = 'yes';
 
 % Design matrix - within subject design
 subj                    = length(subjects);                % number of participants excluding the ones with too few trials
