@@ -234,9 +234,6 @@ summary(model)
 model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
-<<<<<<< HEAD
-# compare models
-anova(model, model2)
 # random slope model fits the data significantly better, so we continue with this one
 # there is an effect of round, so we analyse both rounds seperately
 
@@ -259,10 +256,6 @@ modelround2b <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Item) + (1+Condition|
 summary(modelround2b)
 # compare models
 anova(modelround2a,modelround2b) # random slope model is better, so we will report this one in the paper
-
-=======
-anova(model, model2)
->>>>>>> c7e52a88aaec928a594358dfdf6780eb42d56b15
 
 # simple Anova for accuracy
 # arcsine transformed data Anova
