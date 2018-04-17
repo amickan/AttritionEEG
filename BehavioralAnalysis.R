@@ -194,9 +194,8 @@ barplot + geom_bar(stat="identity", position=position_dodge()) +
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
   coord_cartesian(ylim=c(80,100)) +
   scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Percentage correctly recalled words in Spanish") +
-  xlab("Interference condition - high vs. low frequency") +
-  scale_fill_manual( "Condition", values=c("red4","grey50"),labels=c("Interference","No Interference")) +
+  ylab("Percentage correctly recalled words in Italian") +
+  scale_fill_grey(labels=c("Interference","No Interference")) +
   theme_bw()
 
 ###### Stats on behavioral results ######
@@ -230,10 +229,12 @@ post2 <- post[post$Trial_nr>70,]
 model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model)
 
+
 # random slope model
 model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
+<<<<<<< HEAD
 # compare models
 anova(model, model2)
 # random slope model fits the data significantly better, so we continue with this one
@@ -259,6 +260,9 @@ summary(modelround2b)
 # compare models
 anova(modelround2a,modelround2b) # random slope model is better, so we will report this one in the paper
 
+=======
+anova(model, model2)
+>>>>>>> c7e52a88aaec928a594358dfdf6780eb42d56b15
 
 # simple Anova for accuracy
 # arcsine transformed data Anova
