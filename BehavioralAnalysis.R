@@ -224,16 +224,22 @@ post$Incorr <- post$OrigLen-post$Corr
 post1 <- post[post$Trial_nr<71,]
 post2 <- post[post$Trial_nr>70,]
 
+# setting contrasts so that no interference condition is the intercept
+contrasts(post$Condition) <- c(1,0)
+contrasts(post1$Condition) <- c(1,0)
+contrasts(post2$Condition) <- c(1,0)
+  
 #### Accuracy after interference ###
 # random intercept model on entire data set
 model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model)
 
-
 # random slope model
 model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
+# compare models
+anova(model,model2)
 # random slope model fits the data significantly better, so we continue with this one
 # there is an effect of round, so we analyse both rounds seperately
 

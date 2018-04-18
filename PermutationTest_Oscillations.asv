@@ -79,7 +79,7 @@ cfg = [];
 cfg.channel          = {'EEG'};
 cfg.latency          = [0.5 1];
 cfg.method           = 'montecarlo';
-cfg.frequency        = [6 10];%'all';
+cfg.frequency        = [6 8];%'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';
 cfg.correctm         = 'cluster';
 cfg.clusteralpha     = 0.05;
@@ -151,9 +151,8 @@ if numberofsignclusters > 0
         startbin = stat.time(min(foundz));
         endbin = stat.time(max(foundz));
         disp(['Positive cluster ', num2str(i), ' starts at ', num2str(startbin), ' s and ends at ', num2str(endbin), ' s.'])
-        disp(['Positive cluster ', num2str(i), ' has a cluster statistic of ', num2str(stat.posclusters(i).clusterstat), ' and a standard deviation of ',num2str(stat.posclusters(i).stddev),'.' ])
-        disp(['The following frequencies are included in this significant cluster:  ', num2str(stat.freq(unique(foundy')))])
-        disp(['The following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
+        disp(['the following frequencies are included in this significant cluster:  ', num2str(stat.freq(unique(foundy')))])
+        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
     end
 end
 
@@ -164,8 +163,7 @@ if numberofsignclustersneg > 0
         startbin = stat.time(min(foundz));
         endbin = stat.time(max(foundz));
         disp(['Negative cluster ', num2str(i), ' starts at ', num2str(startbin), ' s and ends at ', num2str(endbin), ' s.'])
-        disp(['Negative cluster ', num2str(i), ' has a cluster statistic of ', num2str(stat.negclusters(i).clusterstat), ' and a standard deviation of ',num2str(stat.negclusters(i).stddev),'.' ])
-        disp(['The following frequencies are included in this significant cluster:  ', num2str(stat.freq(unique(foundy')))])
-        disp(['The following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
+        disp(['the following frequencies are included in this significant cluster:  ', num2str(stat.freq(unique(foundy')))])
+        disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
     end
 end
