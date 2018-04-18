@@ -5,8 +5,8 @@
 require(reshape)
 require(data.table)
 
-A = c(301:329)
-#A = c(301:308, 310:326, 328, 329) # only including the participants that also enter the EEG analysis
+#A = c(301:329)
+A = c(301:308, 310:326, 328, 329) # only including the participants that also enter the EEG analysis
 
 data_list <- list()
 data_list2 <- list()
@@ -157,12 +157,12 @@ require(ggplot2)
 # histogram of results 
 hist(post$Ratio)
 
-ddply(post, .(Condition, Subject_nr), 
+ddply(post1, .(Condition, Subject_nr), 
       summarise, N=length(Ratio), 
       mean   = mean(Ratio, na.rm = TRUE), 
       sem = sd(Ratio, na.rm = TRUE)/sqrt(N)) -> aggregatedRatio
 
-aggregated_means_ratio <- ddply(post, .(Condition), 
+aggregated_means_ratio <- ddply(post1, .(Condition), 
                                 summarise,
                                 condition_mean = mean(Ratio,na.rm = T),
                                 condition_sem = sd(Ratio,na.rm = T)/sqrt(length(Ratio[!is.na(Ratio)])))
@@ -174,7 +174,7 @@ lineplot + geom_point(color="darkgrey") +
   geom_line(color="darkgrey") +
   geom_point(aes(y = condition_mean,
                  color = Condition), color="black") +
-  #geom_text(aes(label=Subject_nr)) +
+  geom_text(aes(label=Subject_nr)) +
   geom_line(aes(y = condition_mean,color="red")) +
   geom_errorbar(aes(ymin=condition_mean-condition_sem,
                     ymax=condition_mean+condition_sem,
@@ -234,7 +234,6 @@ contrasts(post$Block) <- c(0,1)
 # different contrast coding resulting in the intercept being the grand mean
 #contrasts(post$Condition) <- contr.sum
 
-  
 #### Accuracy after interference ###
 # random intercept model on entire data set
 model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
@@ -273,7 +272,7 @@ anova(modelround2a,modelround2b) # random slope model is better, so we will repo
 # arcsine transformed data Anova
 post$NewRatio <- asin(sqrt(post$Ratio/100))
 anova_ratio <- aov(NewRatio ~ Condition*Block, data = post)
-anova_ratio <- aov(NewRatio ~ Condition, data = post[post$Block==2,])
+#anova_ratio <- aov(NewRatio ~ Condition, data = post[post$Block==2,])
 summary(anova_ratio)
 
 ###### RTs #####
@@ -396,3 +395,7 @@ cond1 <- exposures2[exposures2$Var2==1,]$Freq
 cond2 <- exposures2[exposures2$Var2==2,]$Freq
 t.test(cond1,cond2)
 reshape(exposures2, idvar = "Var1", timevar = "Var2", direction = "wide")
+
+
+#### Check coherence of errors from round 1 to round 2 ####
+
