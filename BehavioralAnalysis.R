@@ -135,6 +135,7 @@ post <- rbindlist(data_list2)
 post$Subject_nr <- as.factor(post$Subject_nr)
 post$Condition <- as.factor(post$Condition)
 post$Item <- as.factor(post$Item)
+post$Block <- as.factor(post$Block)
 
 # log-transforming the RTs
 post$RTlog <- log(post$VoiceOnset)
@@ -228,6 +229,11 @@ post2 <- post[post$Trial_nr>70,]
 contrasts(post$Condition) <- c(1,0)
 contrasts(post1$Condition) <- c(1,0)
 contrasts(post2$Condition) <- c(1,0)
+contrasts(post$Block) <- c(0,1)
+
+# different contrast coding resulting in the intercept being the grand mean
+#contrasts(post$Condition) <- contr.sum
+
   
 #### Accuracy after interference ###
 # random intercept model on entire data set
@@ -235,20 +241,20 @@ model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item)
 summary(model)
 
 # random slope model
-model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
 # compare models
 anova(model,model2)
 # random slope model fits the data significantly better, so we continue with this one
-# there is an effect of round, so we analyse both rounds seperately
+# there is no effect of round, so we technically we can't analyse rounds seperately, I will still do it below for explanation purposes
 
 ## Round 1
 # random intercept only
 modelround1a <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
 summary(modelround1a)
 # random slope 
-modelround1b <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Subject_nr) + (1|Item) + (0+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
+modelround1b <- glmer(cbind(Corr, Incorr) ~ Condition + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post1)
 summary(modelround1b)
 # compare models
 anova(modelround1a,modelround1b) # random slope model is better, so we will report this one in the paper
@@ -266,6 +272,7 @@ anova(modelround2a,modelround2b) # random slope model is better, so we will repo
 # simple Anova for accuracy
 # arcsine transformed data Anova
 post$NewRatio <- asin(sqrt(post$Ratio/100))
+anova_ratio <- aov(NewRatio ~ Condition*Block, data = post)
 anova_ratio <- aov(NewRatio ~ Condition, data = post[post$Block==2,])
 summary(anova_ratio)
 
