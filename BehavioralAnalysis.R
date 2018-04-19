@@ -240,7 +240,7 @@ model <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Subject_nr) + (1|Item)
 summary(model)
 
 # random slope model
-model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Item) + (1+Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+model2 <- glmer(cbind(Corr, Incorr) ~ Condition*Block + (1|Item) + (1+Block*Condition|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(model2)
 
 # compare models
@@ -286,7 +286,7 @@ modelRT <- lmer(log(VoiceOnset) ~ Condition*Block + (1|Subject_nr) + (1|Item), c
 summary(modelRT)
 
 # random slope model for RTs
-modelRT2 <- lmer(log(VoiceOnset) ~ Condition*Block + (1|Item) + (1+Condition|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2 <- lmer(log(VoiceOnset-2000) ~ Condition*Block + (1|Item) + (1+Block*Condition|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 summary(modelRT2)
 
 # model comparison
