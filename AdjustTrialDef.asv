@@ -22,12 +22,5 @@ for i = 1:length(subjects)
     cfg.trials          = find((dummy.data_clean.trialinfo(:,9) == 1)& (dummy.data_clean.trialinfo(:,3) == 2)); 
     data_cond2          = ft_selectdata(cfg, dummy.data_clean);
     save(cond2out, 'data_cond2');
-    % get trial info
-    c1 = length(data_cond1.trial);
-    c2 = length(data_cond2.trial); 
-    % save trial information in txt
-    fid = fopen('TrialCount_PostPreprocessing_SecondHalf.txt','a');
-    formatSpec = '%d\t%d\t%d\n';
-    fprintf(fid,formatSpec,pNumber,c1,c2);
-    disp(['## Done PP ', num2str(pNumber)]);
+    disp('num2str(pNumber));
 end
