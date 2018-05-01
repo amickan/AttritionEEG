@@ -11,6 +11,7 @@ for i = 1:length(subjects)
     cond2out = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
     behav = load(behavFilename);
     behav = behav(71:140,:);
+    behav = behav(ismember(behav(:,1),dummy.data_clean.trialinfo(:,2)),:);
     dummy.data_clean.trialinfo = [dummy.data_clean.trialinfo(:,1) behav];
     %condition 1
     cfg                 = [];
