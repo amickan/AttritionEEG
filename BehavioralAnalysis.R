@@ -115,15 +115,15 @@ for (i in 1:length(A)){
   }
   
   # safe the new Final test file for the NewMarker.m script
-  #setwd(wd1)
-  #outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
-  #write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
+  setwd(wd1)
+  outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
+  write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
   
   # safe the file with the relevant behavioral information as text (for preprocessing script)
   # columns as follows: TrialNr, Condition, VoiceOnset, TypeError, Not learned in Spanish, unknown in English, known in Italian, Read in
-  #setwd(wd1)
-  #outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
-  #write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
+  setwd(wd1)
+  outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
+  write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
   
   print(A[i])
   

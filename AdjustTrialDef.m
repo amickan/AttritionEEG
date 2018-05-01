@@ -6,9 +6,9 @@ subjects = [301:308, 310:326, 328, 329];
 for i = 1:length(subjects)
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_FinalTestPart2_data_all_preprocessed');
     dummy = load(filename1);
-    behavFilename = strcat(num2str(pNumber), '\Day3\', num2str(pNumber),'_FinalTest\', num2str(pNumber),'_BehavMatrixFinalTest.txt');
-    cond1out = strcat('PreprocessedData_secondhalf\', num2str(pNumber), '_data_clean_2_cond1');
-    cond2out = strcat('PreprocessedData_secondhalf\', num2str(pNumber), '_data_clean_2_cond2');
+    behavFilename = strcat(num2str(subjects(i)), '\Day3\', num2str(subjects(i)),'_FinalTest\', num2str(subjects(i)),'_BehavMatrixFinalTest.txt');
+    cond1out = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    cond2out = strcat('PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
     behav = load(behavFilename);
     behav = behav(71:140,:);
     dummy.data_cond1.trialinfo = [dummy.data_clean.trialinfo(:,1) behav];
@@ -28,6 +28,6 @@ for i = 1:length(subjects)
     % save trial information in txt
     fid = fopen('TrialCount_PostPreprocessing_SecondHalf.txt','a');
     formatSpec = '%d\t%d\t%d\n';
-    fprintf(fid,formatSpec,pNumber,c1,c2);
-    disp(['## Done PP ', num2str(pNumber)]);
+    fprintf(fid,formatSpec,subjects(i),c1,c2);
+    disp(['## Done PP ',num2str(subjects(i))]);
 end
