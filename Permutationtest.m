@@ -35,7 +35,7 @@ neighbours                  = ft_prepare_neighbours(cfg_neighb, Condition1{1});
 cfg                     = [];
 cfg.method              = 'montecarlo';       
 cfg.channel             = {'EEG'};     
-cfg.latency             = [0 1];      
+cfg.latency             = [0.2 0.35];      
 cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
 cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding
@@ -45,7 +45,7 @@ cfg.neighbours          = neighbours;
 cfg.tail                = 0;                                % -1, 1 or 0 (default = 0); one-sided or two-sided test
 cfg.clustertail         = 0;
 cfg.alpha               = 0.05;                            % alpha level of the permutation test
-cfg.numrandomization    = 500;                              % number of draws from the permutation distribution
+cfg.numrandomization    = 2000;                              % number of draws from the permutation distribution
 cfg.correcttail         = 'prob';
 
 % Design matrix - within subject design
