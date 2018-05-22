@@ -289,23 +289,23 @@ summary(modelRT2full)
 
 ### Seperate models for each round (just out of curiosity)
 # Round 1
-modelRT2round1 <- lmer(log(RT_new) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
+modelRT2round1 <- lmer(log(RT_new-2000) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
 summary(modelRT2round1)
 # Round 2
-modelRT2round2 <- lmer(log(RT_new) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
+modelRT2round2 <- lmer(log(RT_new-2000) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
 summary(modelRT2round2)
 
 ## Model reporting - fullest model above
 # Same as above
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelRT2Condition <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Condition <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Condition)
 # Second, let's take out the main effect for Block
-modelRT2Block <- lmer(log(RT_new) ~ ConditionN*BlockN - BlockN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Block <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Block)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelRT2Interaction <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN:BlockN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Interaction <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Interaction)
 # IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
