@@ -45,6 +45,7 @@ for (i in 1:length(A)){
     if (currentFile$Error[j] == 1) {
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
+      currentFile2$RT_new[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
       currentFile2$PhonIncorrect[pos]<-NA
       behav[pos,5]<- 1
@@ -66,6 +67,13 @@ for (i in 1:length(A)){
     
   }
   
+  if (length(currentFile2[ifelse(is.na(currentFile2$Error),
+                                 1,currentFile2$Error) == 1,]$RT_new) > 0) {
+    currentFile2[ifelse(is.na(currentFile2$Error),
+                        1,currentFile2$Error) == 1,]$RT_new <- NA # this excludes words that were produced with errors after interference from RT analysis
+    
+  }
+  
   setwd(wd3)
   currentFile3 <- as.data.frame(read.delim(infile3, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
   
@@ -74,6 +82,7 @@ for (i in 1:length(A)){
     if (currentFile3$Error[j] == 1) {
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
+      currentFile2$RT_new[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
       currentFile2$PhonIncorrect[pos]<-NA
       behav[pos,6]<-1
@@ -89,6 +98,7 @@ for (i in 1:length(A)){
     if (currentFile4$Known[j] == 1) {
       currentFile2$Error[pos] <- NA
       currentFile2$VoiceOnset[pos] <- NA
+      currentFile2$RT_new[pos] <- NA
       currentFile2$PhonCorrect[pos]<- NA
       currentFile2$PhonIncorrect[pos]<-NA
       behav[pos,7]<-1
