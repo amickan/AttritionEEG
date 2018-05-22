@@ -246,9 +246,8 @@ post$BlockN <- (as.numeric(post$Block)-1)-0.5
 
 ## Full model with maximal random effects structure
 modelfull1 <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
-modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(modelfull)
-# the somewhat simpler model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
+# the model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
 # no comparisons needed, you report the beta weights from this model in a table in your paper
 
 
