@@ -137,8 +137,11 @@ post$Condition <- as.factor(post$Condition)
 post$Item <- as.factor(post$Item)
 post$Block <- as.factor(post$Block)
 
-# log-transforming the RTs
+# leaving out RTs under 2000ms
+post[post$RT_new < 2000,]$RT_new <- NA
+# log-transforming the NEW and OLD RTs
 post$RTlog <- log(post$VoiceOnset)
+post$RT_new_log <- log(post$RT_new)
 
 # calculating ratio
 post$Total <- post$PhonCorr+post$PhonIncorr
@@ -232,9 +235,10 @@ post$BlockN <- (as.numeric(post$Block)-1)-0.5
 ###### Accuracy after interference #####
 
 ## Full model with maximal random effects structure
-modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelfull1 <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(modelfull)
-# this model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
+# the somewhat simpler model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
 # no comparisons needed, you report the beta weights from this model in a table in your paper
 
 
@@ -256,15 +260,15 @@ summary(anova_ratio)
 ## Model reporting - fullest model above
 # It is best to report Chi-square p-values for each of the effects serpately 
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelCondition)
 # The chi-suare p-value from the Anova table is the p-value for the main effect of Condition. This p-value is slightly higher than the one from the model output itself because the distribution against which it is calcualted is different (chi-square vs z-distribution)
 # Second, let's take out the main effect for Block
-modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelBlock)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelInteraction)
 #IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
@@ -272,35 +276,36 @@ anova(modelfull, modelInteraction)
 
 ###### Modelling for RTs #####
 # simple Anova for RTs (log-transformed)
-anova_rt <- aov(RTlog ~ Condition*Block, data = post)
+anova_rt <- aov(RT_new_log ~ Condition*Block, data = post)
 summary(anova_rt)
 
 ## Full model on log transformed data 
 # Full model with maximum random effects structure 
 # We take the log of the reaction times because the distribution is very non-normal, and we subtract 2000ms because that's the lowest value there is currently (due to 2s delay), log transform works better if there are values close to 0 and between 0-1
-modelRT2full <- lmer(log(VoiceOnset-2000) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2full <- lmer(log(RT_new-2000) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 summary(modelRT2full)
-# model converges, so we stick with it, no simplifying necessary 
+# we continue simplifying the random effects structure, overall, the random effecst don't take out almost any variation, we leave in the simplest, intercept only
+# both main effects are significant, the interaction reached marginal significance
 
 ### Seperate models for each round (just out of curiosity)
 # Round 1
-modelRT2round1 <- lmer(log(VoiceOnset) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
+modelRT2round1 <- lmer(log(RT_new) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
 summary(modelRT2round1)
 # Round 2
-modelRT2round2 <- lmer(log(VoiceOnset) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
+modelRT2round2 <- lmer(log(RT_new) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
 summary(modelRT2round2)
 
 ## Model reporting - fullest model above
 # Same as above
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelRT2Condition <- lmer(log(VoiceOnset-2000) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Condition <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Condition)
 # Second, let's take out the main effect for Block
-modelRT2Block <- lmer(log(VoiceOnset-2000) ~ ConditionN*BlockN - BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Block <- lmer(log(RT_new) ~ ConditionN*BlockN - BlockN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Block)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelRT2Interaction <- lmer(log(VoiceOnset-2000) ~ ConditionN*BlockN - ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Interaction <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN:BlockN + (1|Item) + (1BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Interaction)
 # IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
