@@ -245,18 +245,17 @@ post$BlockN <- (as.numeric(post$Block)-1)-0.5
 ###### Accuracy after interference #####
 
 ## Full model with maximal random effects structure
-modelfull1 <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = "binomial", control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(modelfull)
 # the model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
 # no comparisons needed, you report the beta weights from this model in a table in your paper
 
-
 ## There is no interaction of round and condition in the full model, so we technically we can't analyse rounds seperately, I will still do it below and I think you can still justify looking at the first round seperately based on our hypothesis
 ## Round 1
-modelround1b <- glmer(cbind(Corr, Incorr) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post[post$Block==1,])
+modelround1b <- glmer(cbind(Corr, Incorr) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = "binomial", control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post[post$Block==1,])
 summary(modelround1b)
 ## Round 2
-modelround2b <- glmer(cbind(Corr, Incorr) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post[post$Block==2,])
+modelround2b <- glmer(cbind(Corr, Incorr) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = "binomial", control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post[post$Block==2,])
 summary(modelround2b)
 
 ## Simple Anova for accuracy
@@ -269,15 +268,15 @@ summary(anova_ratio)
 ## Model reporting - fullest model above
 # It is best to report Chi-square p-values for each of the effects serpately 
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelCondition)
 # The chi-suare p-value from the Anova table is the p-value for the main effect of Condition. This p-value is slightly higher than the one from the model output itself because the distribution against which it is calcualted is different (chi-square vs z-distribution)
 # Second, let's take out the main effect for Block
-modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelBlock)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelInteraction)
 #IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
