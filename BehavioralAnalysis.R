@@ -150,8 +150,8 @@ post$Block <- as.factor(post$Block)
 # leaving out RTs under 2000ms
 post[post$RT_new < 2000,]$RT_new <- NA
 # log-transforming the NEW and OLD RTs
-post$RTlog <- log(post$VoiceOnset)
-post$RT_new_log <- log(post$RT_new)
+post$RTlog <- log(post$VoiceOnset-2000)
+post$RT_new_log <- log(post$RT_new-2000)
 
 # calculating ratio
 post$Total <- post$PhonCorr+post$PhonIncorr
