@@ -170,12 +170,12 @@ require(ggplot2)
 # histogram of results 
 hist(post$Ratio)
 
-ddply(post1, .(Condition, Subject_nr), 
+ddply(post, .(Condition, Subject_nr), 
       summarise, N=length(Ratio), 
       mean   = mean(Ratio, na.rm = TRUE), 
       sem = sd(Ratio, na.rm = TRUE)/sqrt(N)) -> aggregatedRatio
 
-aggregated_means_ratio <- ddply(post1, .(Condition), 
+aggregated_means_ratio <- ddply(post, .(Condition), 
                                 summarise,
                                 condition_mean = mean(Ratio,na.rm = T),
                                 condition_sem = sd(Ratio,na.rm = T)/sqrt(length(Ratio[!is.na(Ratio)])))
@@ -200,6 +200,9 @@ lineplot + geom_point(color="darkgrey") +
  # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +
   theme_bw()
 
+setwd("U:/PhD/EXPERIMENT 2 - EEG")
+#png("Accuracy.png", width = 4.2, height = 4, pointsize = 4, units = "in", res= 1200)
+#par(cex.axis = 2, cex.lab = 2)
 barplot <- ggplot(aggregated_means_ratio, aes(y = condition_mean, x = Condition, fill = Condition))
 barplot + geom_bar(stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin=condition_mean-condition_sem,
@@ -208,9 +211,55 @@ barplot + geom_bar(stat="identity", position=position_dodge()) +
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
   coord_cartesian(ylim=c(80,100)) +
   scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Percentage correctly recalled words in Italian") +
+  ylab("Percentage correctly recalled phonemes in Italian") +
   scale_fill_grey(labels=c("Interference","No Interference")) +
   theme_bw()
+#ggsave("Accuracy.png", width = 12, height = 8, units = "cm", dpi = 1200)
+
+### Plot for naming latencies ####
+post$RT_plot <- post$RT_new-2000
+ddply(post, .(Condition, Subject_nr), 
+      summarise, N=length(RT_plot), 
+      mean   = mean(RT_plot, na.rm = TRUE), 
+      sem = sd(RT_plot, na.rm = TRUE)/sqrt(N)) -> aggregatedRT
+
+aggregated_means_rt <- ddply(post, .(Condition), 
+                                summarise,
+                                condition_mean = mean(RT_plot,na.rm = T),
+                                condition_sem = sd(RT_plot,na.rm = T)/sqrt(length(RT_plot[!is.na(RT_plot)])))
+
+aggregatedRT <- merge(aggregatedRT, aggregated_means_rt, by = c("Condition"))
+
+lineplot <- ggplot(aggregatedRT, aes(y = mean, x = Condition, group = Subject_nr))
+lineplot + geom_point(color="darkgrey") +
+  geom_line(color="darkgrey") +
+  geom_point(aes(y = condition_mean,
+                 color = Condition), color="black") +
+  geom_text(aes(label=Subject_nr)) +
+  geom_line(aes(y = condition_mean,color="red")) +
+  geom_errorbar(aes(ymin=condition_mean-condition_sem,
+                    ymax=condition_mean+condition_sem,
+                    color = "red",
+                    na.rm = T),
+                width = 0.5) +
+  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
+  scale_x_discrete(labels=c("Interference", "No interference"), breaks = 1:2, expand = c(0.1,0.1)) +
+  ylab("Percentage correctly recalled words in Spanish") +
+  # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +
+  theme_bw()
+
+barplot <- ggplot(aggregated_means_rt, aes(y = condition_mean, x = Condition, fill = Condition))
+barplot + geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=condition_mean-condition_sem,
+                    ymax=condition_mean+condition_sem),
+                width = 0.5, position=position_dodge(0.9)) +
+  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
+  #coord_cartesian(ylim=c(80,100)) +
+  scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2, expand = c(0.1,0.1)) +
+  ylab("Naming latencies in Italian (in ms)") +
+  scale_fill_grey(labels=c("Interference","No Interference")) +
+  theme_bw()
+#ggsave("Accuracy.png", width = 12, height = 8, units = "cm", dpi = 1200)
 
 ###### Stats on behavioral results ######
 
@@ -261,7 +310,11 @@ summary(modelround2b)
 ## Simple Anova for accuracy
 ## Arcsine transformed data Anova
 post$NewRatio <- asin(sqrt(post$Ratio/100))
-anova_ratio <- aov(NewRatio ~ Condition*Block, data = post)
+# aggregate data by subject and condition
+aggAcc <- aggregate(post$NewRatio,by=list(post$Subject_nr,post$Condition, post$Block), 
+                    FUN=mean, na.rm=TRUE)
+colnames(aggAcc) <- c("Subject_nr", "Condition", "Block", "Ratio")
+anova_ratio <- aov(Ratio ~ Condition*Block, data = aggAcc)
 #anova_ratio <- aov(NewRatio ~ Condition, data = post[post$Block==1,]) # this is if you wanna look at one block only
 summary(anova_ratio)
 
@@ -284,7 +337,10 @@ anova(modelfull, modelInteraction)
 
 ###### Modelling for RTs #####
 # simple Anova for RTs (log-transformed)
-anova_rt <- aov(RT_new_log ~ Condition*Block, data = post)
+aggRT <- aggregate(post$RT_new_log,by=list(post$Subject_nr,post$Condition, post$Block), 
+                    FUN=mean, na.rm=TRUE)
+colnames(aggRT) <- c("Subject_nr", "Condition", "Block", "RT")
+anova_rt <- aov(RT ~ Condition*Block, data = aggRT)
 summary(anova_rt)
 
 ## Full model on log transformed data 
@@ -404,17 +460,26 @@ for (i in 1:length(A)){
 adap <- rbindlist(data_list)
 blocks <- data.frame(tapply(adap$Block_nr, adap$Subject_nr,max)) # how many blocks did the pp go through
 
+adaptive <- adap[adap$Block_nr <3,] # keep only the second block
+adaptive <- adaptive[adaptive$Block_nr >1,]
+successAdap <- 1-tapply(adaptive$Error, adaptive$Subject_nr,mean)
+
 #### Exposure per item/pp ####
 exposures<-data.frame(table(adap$Item, adap$Condition))
 #exposures <- exposures[exposures$Freq != 0,]
-exposures$Freq <- exposures$Freq + 11
+exposures$Freq <- exposures$Freq + 12
 exposures2<-data.frame(table(adap$Subject, adap$Condition))
-exposures2[exposures2$Var2==2,]$Freq <- exposures2[exposures2$Var2==2,]$Freq +8
+exposures2[exposures2$Var2==2,]$Freq <- exposures2[exposures2$Var2==2,]$Freq +14
 cond1 <- exposures2[exposures2$Var2==1,]$Freq
 cond2 <- exposures2[exposures2$Var2==2,]$Freq
 t.test(cond1,cond2)
 reshape(exposures2, idvar = "Var1", timevar = "Var2", direction = "wide")
 
+exposures3<-data.frame(table(adap$Item, adap$Subject_nr))
+#exposures3 <- exposures3[exposures3$Freq != 0,]
+exposures3$Freq <- exposures3$Freq + 12
+expavg <- data.frame(tapply(exposures3$Freq, exposures3$Var2, mean))
 
 #### Check coherence of errors from round 1 to round 2 ####
+
 
