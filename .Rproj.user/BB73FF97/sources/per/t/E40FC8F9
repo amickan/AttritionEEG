@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1580998853959.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3180369995",
+    "id" : "E40FC8F9",
+    "lastKnownWriteTime" : 1581074121,
+    "last_content_update" : 1581074122005,
+    "path" : "U:/PhD/EXPERIMENT 2 - EEG/EEG-analysis/BehavioralAnalysis.R",
+    "project_path" : "BehavioralAnalysis.R",
+    "properties" : {
+        "cursorPosition" : "239,20",
+        "scrollLine" : "227"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
