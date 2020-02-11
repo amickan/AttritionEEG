@@ -1,7 +1,7 @@
 %% Save trials into different datasets for the median split analysis of the interference phase data
 clear all
-A = [304:308, 310:326, 328, 329]; 
-
+A = [321:326, 328, 329]; % 303, 320 not processed
+%A = [320, 328];
 for i = 1:length(A)
     cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\') % this is where EEG data is stored 
     pNumber = A(i);

@@ -1,6 +1,6 @@
-%% Grand average for interference phase 
+%% Grand average of median splits seperately for tasks 
 
-subjects = [301:302, 304:308, 310:319, 321:326, 329]; % 328 is not readable somehow, subjects that should be included in grand average
+subjects = [301:302, 304:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 
 cfg = [];
@@ -10,9 +10,9 @@ cfg.baseline = [-0.2 0];
 Condition1 = cell(1,length(subjects));
 for i = 1:length(subjects)
     % condition 1 for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_high_av');
     dummy = load(filename1);
-    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_pic4_cond1);
+    Condition1{i} = ft_timelockanalysis(cfg, dummy.up3);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy filename1
     disp(subjects(i));
@@ -22,7 +22,6 @@ end
 cfg = [];
 cfg.keepindividual='no';
 cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
-%cond1 = ft_timelockgrandaverage(cfg, Condition1{1:23});
 %clear Condition1
 
 % load data Condition 2
@@ -32,9 +31,9 @@ cfg.baseline = [-0.2 0];
 Condition2 = cell(1,length(subjects));
 for i = 1:length(subjects)
     % condition 2 for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_data_clean_cond2');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_low_av');
     dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_pic4_cond2);
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.low3);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2 filename2
     disp(subjects(i));
@@ -43,18 +42,7 @@ end
 cfg = [];
 cfg.keepindividual='no';
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
-%cond2 = ft_timelockgrandaverage(cfg, Condition2{1:23});
 %clear Condition2
-
-% plotting average
-%cfg = [];
-%cfg.layout = 'actiCAP_64ch_Standard2.mat';
-%cfg.interactive = 'yes';
-%cfg.showoutline = 'yes';
-%cfg.showlabels = 'yes'; 
-%cfg.fontsize = 6; 
-%%cfg.ylim = [-3e-13 3e-13];
-%ft_multiplotER(cfg, cond1, cond2);
 
 % manual plot with some electrodes
 fig = figure;
@@ -482,6 +470,6 @@ set(gca,'YDir','reverse');
 
 %h = get(gca,'Children');
 %v = [h(1) h(3)];
-legend1 = legend('Targets (interference condition)', 'Fillers');
+legend1 = legend('High', 'Low');
 set(legend1,...
     'Position',[0.817402439320025 0.207759699624531 0.0596115241601035 0.108208554452382]);
