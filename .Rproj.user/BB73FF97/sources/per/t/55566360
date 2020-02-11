@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581426982467.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3134938059",
+    "id" : "55566360",
+    "lastKnownWriteTime" : 1581430601,
+    "last_content_update" : 1581430601865,
+    "path" : "U:/PhD/EXPERIMENT 2 - EEG/EEG-analysis/CorrelationsRTs_Interference_FinalTest.R",
+    "project_path" : "CorrelationsRTs_Interference_FinalTest.R",
+    "properties" : {
+        "cursorPosition" : "83,29",
+        "scrollLine" : "77",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

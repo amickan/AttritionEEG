@@ -32,16 +32,25 @@ for i = 1:length(subjects)
     clear dummy2
 end
 
-% calculate the relative difference between the conditions per subject
 eff = Condition2;
 for i = 1:length(subjects)
     eff{i}.powspctrm = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
 end
 
-% grand average over subjects
+% grand average for weighted effect
 cfg = [];
 cfg.keepindividual='yes';
 effect = ft_freqgrandaverage(cfg, eff{:});
+
+% grand-average over subjects for conditions
+cfg = [];
+cfg.keepindividual = 'no';
+cond1 = ft_freqgrandaverage(cfg, Condition1{:});
+cond2 = ft_freqgrandaverage(cfg, Condition2{:});
+
+diff = cond1;
+diff.powspctrm = (cond1.powspctrm - cond2.powspctrm) ./ ((cond1.powspctrm + cond2.powspctrm)/2);
+
 
 % plot the difference between conditions               
 % one channel
@@ -51,11 +60,30 @@ cfg.channel      = {'Cz'};
 %cfg.colormap      = redblue;
 cfg.zlim         = [-.18 .18]; %'maxabs'; %[-.18 .18]; %
 figure 
-ft_singleplotTFR(cfg, effect);
+subplot(1,3,1) ;
+ft_singleplotTFR(cfg, diff);
+title('keepindividual = yes');
+subplot(1,3,2) ;
+ft_singleplotTFR(cfg, diffx);
+title('By hand (first avg over trials per subject, then avg over subjects)');
+subplot(1,3,3) ;
+ft_singleplotTFR(cfg, diffy);
+title('keepindividual = no');
 
-% for stats, create a null structure to compare the average effect to
-null = effect;
-null.powspctrm = zeros(size(effect.powspctrm));
+
+%% Alternative way of looking at data: calculate a structure which is the weighted diff
+eff = Condition2;
+for i = 1:length(subjects)
+    eff{i}.powspctrm = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
+end
+
+% grand average for weighted effect
+cfg = [];
+cfg.keepindividual='yes';
+effect = ft_freqgrandaverage(cfg, eff{:});
+
+null = cond1;
+null.powspctrm = zeros(size(cond1.powspctrm));
 
 % Create neighbourhood structure
 cfg_neighb                  = [];
@@ -110,6 +138,7 @@ cfg.parameter           = 'stat';
 cfg.zlim                = [-3 3];
 cfg.layout              = 'EEG1010.lay'; %'actiCAP_64ch_Standard2.mat';
 ft_clusterplot(cfg, stat);
+
 
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];
