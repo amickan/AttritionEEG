@@ -114,24 +114,29 @@ cfg.ivar                = 2;                                % number or list wit
 %% Permutation test evaluation
 
 % get relevant (significant) values
-pos_cluster_pvals = [stat.posclusters(:).prob];
-pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
-pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+if isempty(stat.posclusters) == 0
+    pos_cluster_pvals = [stat.posclusters(:).prob];
+    pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
+    pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+    select = pos_cluster_pvals < stat.cfg.alpha;
+    signclusters = pos_cluster_pvals(select);
+    numberofsignclusters = length(signclusters);
+    disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
+else
+    numberofsignclusters = 0;
+end
 
-neg_cluster_pvals = [stat.negclusters(:).prob];
-neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
-neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
-
-% Describe significant cluster 
-
-select = pos_cluster_pvals < stat.cfg.alpha;
-selectneg = neg_cluster_pvals < stat.cfg.alpha;
-signclusters = pos_cluster_pvals(select);
-signclustersneg = neg_cluster_pvals(selectneg);
-numberofsignclusters = length(signclusters);
-numberofsignclustersneg = length(signclustersneg);
-disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
-disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+if isempty(stat.negclusters) == 0
+    neg_cluster_pvals = [stat.negclusters(:).prob];
+    neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
+    neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
+    selectneg = neg_cluster_pvals < stat.cfg.alpha;
+    signclustersneg = neg_cluster_pvals(selectneg);
+    numberofsignclustersneg = length(signclustersneg);
+    disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+else 
+    numberofsignclustersneg = 0;
+end
 
 if numberofsignclusters > 0
     for i = 1:length(signclusters)

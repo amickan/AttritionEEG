@@ -1,28 +1,38 @@
-%%% Permutation test script %%%
+%%% Final test - ERPs - Permutation test %%%
 
-% Loading all preprocessed data 
+%% Loading data 
 
-subjects = [301:308, 310:326, 328, 329];  % subjects that should be included in grand average
+subjects = [301:302, 304:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
+
 cfg = [];
 cfg.keeptrials='no';
-%cfg.baseline = [-0.2 0];
-Condition1 = cell(1,27);
-Condition2 = cell(1,27);
+cfg.baseline = [-0.2 0];
+
+Condition1 = cell(1,length(subjects));
+Condition2 = cell(1,length(subjects));
+
 for i = 1:length(subjects)
     % condition 1 for each participant
+    %filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond1);
-    %Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
+    %Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
+    
     % condition 2 for each participant
+    %filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond2);
-    %Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
+    %Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2
 end
+
+%% Permutation test 
 
 % Create neighbourhood structure
 cfg_neighb                  = [];
@@ -68,40 +78,41 @@ cfg.ivar                = 2;                                % number or list wit
 
 [stat]                  = ft_timelockstatistics(cfg, Condition1{:}, Condition2{:});
 
-%save stat_ERP stat;
+%% Permutation test results 
 
-% grand-average over subjects per condition 
-cfg = [];
-cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
-cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
+% calculate difference between conditions per subject 
+cfg                 = [];
+cfg.operation       = 'subtract';
+cfg.parameter       = 'avg';
+raweffect           = cell(1,length(subjects));
+for i = 1:length(subjects)
+    raweffect{i} = ft_math(cfg,Condition1{i},Condition2{i});
+end
 
-
-% Then take the difference of the averages using ft_math
-cfg  = [];
-cfg.operation = 'subtract';
-cfg.parameter = 'avg';
-raweffect = ft_math(cfg,cond1,cond2);
+% grand average over participants difference scores
+cfg                 = [];
+raw                 = ft_timelockgrandaverage(cfg, raweffect{:});
 
 % get relevant (significant) values
-pos_cluster_pvals = [stat.posclusters(:).prob];
-pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
-pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+if isempty(stat.posclusters) == 0
+    pos_cluster_pvals = [stat.posclusters(:).prob];
+    pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
+    pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+else
+    numberofsignclusters = 0;
+end
 
-neg_cluster_pvals = [stat.negclusters(:).prob];
-neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
-neg = ismember(stat.negclusterslabelmat, neg_signif_clust); 
-
-% Indicate how many sign. clusters, time period of sign. clusters, channels
-% of sign. clusters
-
-select = pos_cluster_pvals < stat.cfg.alpha;
-selectneg = neg_cluster_pvals < stat.cfg.alpha;
-signclusters = pos_cluster_pvals(select);
-signclustersneg = neg_cluster_pvals(selectneg);
-numberofsignclusters = length(signclusters);
-numberofsignclustersneg = length(signclustersneg);
-disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
-disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+if isempty(stat.negclusters) == 0
+    neg_cluster_pvals = [stat.negclusters(:).prob];
+    neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
+    neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
+    selectneg = neg_cluster_pvals < stat.cfg.alpha;
+    signclustersneg = neg_cluster_pvals(selectneg);
+    numberofsignclustersneg = length(signclustersneg);
+    disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+else 
+    numberofsignclustersneg = 0;
+end
 
 if numberofsignclusters > 0
     for i = 1:length(signclusters)
@@ -122,7 +133,7 @@ if numberofsignclusters > 0
         cfg.xlim=[starttime endtime];  % in seconds!
         cfg.zlim = [-3 3];
         cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        ft_topoplotER(cfg, raweffect);
+        ft_topoplotER(cfg, raw);
         
         disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
@@ -149,7 +160,7 @@ if numberofsignclustersneg > 0
         cfg.xlim=[starttime endtime];  % in seconds!
         %cfg.zlim = [-5 5];
         cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        ft_topoplotER(cfg, raweffect);
+        ft_topoplotER(cfg, raw);
         
         disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
@@ -157,86 +168,87 @@ if numberofsignclustersneg > 0
     end
 end
 
-% define parameters for plotting
-timestep = 0.05; % in seconds, this can be changed to for example 0.02 for small time windows. otherwise, keep at 0.05
-sampling_rate = 500;
-sample_count = length(stat.time);
-j = [0:timestep:1];
-m = [1:timestep*sampling_rate:sample_count];
+%% Extra plotting
+% timestep = 0.05; % in seconds, this can be changed to for example 0.02 for small time windows. otherwise, keep at 0.05
+% sampling_rate = 500;
+% sample_count = length(stat.time);
+% j = [0:timestep:1];
+% m = [1:timestep*sampling_rate:sample_count];
+% 
+% figure;
+% 
+% % plot positive clusters
+% if numberofsignclusters > 0
+%     for k = 1:(length(m)-1)
+%         if (length(m)-1)>1
+%             if mod((length(m)-1),2) == 0
+%                 subplot(2,(length(m)-1)/2,k);
+%             else
+%                 subplot(1,(length(m)-1),k);
+%             end
+%         end
+%         cfg = [];
+%         cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
+%         %cfg.ylim = [-3e-13 3e-13];
+%         pos_int = all(pos(:, m(k):m(k+1)), 2);
+%         cfg.highlight = 'on';
+%         cfg.highlightchannel = find(pos_int);
+%         cfg.comment = 'xlim';
+%         cfg.commentpos = 'title';
+%         cfg.layout = 'actiCAP_64ch_Standard2.mat';
+%         ft_topoplotER(cfg, raweffect);
+%     end
+% end
+% 
+% % plot positive clusters
+% if numberofsignclustersneg > 0
+%     for k = 1:(length(m)-1)
+%         if (length(m)-1)>1
+%             if mod((length(m)-1),2) == 0
+%                 subplot(2,(length(m)-1)/2,k);
+%             else
+%                 subplot(1,(length(m)-1),k);
+%             end
+%         end
+%         cfg = [];
+%         cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
+%         %cfg.ylim = [-3e-13 3e-13];
+%         neg_int = all(neg(:, m(k):m(k+1)), 2);
+%         cfg.highlight = 'on';
+%         cfg.highlightchannel = find(neg_int);
+%         cfg.comment = 'xlim';
+%         cfg.commentpos = 'title';
+%         cfg.layout = 'actiCAP_64ch_Standard2.mat';
+%         ft_topoplotER(cfg, raweffect);
+%     end
+% end
 
-figure;
-
-% plot positive clusters
-if numberofsignclusters > 0
-    for k = 1:(length(m)-1)
-        if (length(m)-1)>1
-            if mod((length(m)-1),2) == 0
-                subplot(2,(length(m)-1)/2,k);
-            else
-                subplot(1,(length(m)-1),k);
-            end
-        end
-        cfg = [];
-        cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
-        %cfg.ylim = [-3e-13 3e-13];
-        pos_int = all(pos(:, m(k):m(k+1)), 2);
-        cfg.highlight = 'on';
-        cfg.highlightchannel = find(pos_int);
-        cfg.comment = 'xlim';
-        cfg.commentpos = 'title';
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        ft_topoplotER(cfg, raweffect);
-    end
-end
-
-% plot positive clusters
-if numberofsignclustersneg > 0
-    for k = 1:(length(m)-1)
-        if (length(m)-1)>1
-            if mod((length(m)-1),2) == 0
-                subplot(2,(length(m)-1)/2,k);
-            else
-                subplot(1,(length(m)-1),k);
-            end
-        end
-        cfg = [];
-        cfg.xlim=[stat.time(m(k)) stat.time(m(k+1))];
-        %cfg.ylim = [-3e-13 3e-13];
-        neg_int = all(neg(:, m(k):m(k+1)), 2);
-        cfg.highlight = 'on';
-        cfg.highlightchannel = find(neg_int);
-        cfg.comment = 'xlim';
-        cfg.commentpos = 'title';
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
-        ft_topoplotER(cfg, raweffect);
-    end
-end
-
-%%% Cluster plot - additional
-figure; hold on; 
-channels    = stat.label;                               % Get the list of channels
-thing       = pos;                                      % Gets the datapoints in the cluster: stat.posclusterslabelmat / stat.negclusterslabelmat
-plot(stat.time, zeros(size(stat.time)), 'k');           % this is plotting a horizontal line to use as the x-axis
-hold on;
-title( ['Grand average cluster plot'], 'FontSize', 18); % puts a title on the plot
-set(gca, 'YLim', [0, length(stat.label)]);              % Sets the y-limit. This is based on my number of channels;
-    
-% Iterate through the channels, plotting a scatter of the 'active'
-% timepoints in each channel.
- for chan= 1:length(stat.label)
-  value = stat.stat(chan, find(thing(chan,:)));
-  scatter(stat.time(find(thing(chan,:))), zeros(size(find(thing(chan,:))))+chan, 9,value, 'filled');
- end;
-    
- % Edit the axes
- set(gca, 'YTick', 0:length(stat.label), 'YTickLabel', [{''}; stat.label], 'XLim', [min(stat.time) max(stat.time)]); %This sets the y-axis ticks to be channel labels, instead of numbers
- xlabel('Time (seconds)', 'FontSize', 16);              % Sets pretty x- and y-labels
- ylabel('Channel', 'FontSize', 14');
- set(gcf, 'Color', 'w');                                % gives a white background
-  
- % sets the legend
- colorbar;
- colormap(redblue);
- caxis([-5 5]);
- h = colorbar;
- xlabel(h,'T-values');
+%% Cluster plot 
+% figure; 
+% hold on; 
+% channels    = stat.label;                               % Get the list of channels
+% thing       = pos;                                      % Gets the datapoints in the cluster: stat.posclusterslabelmat / stat.negclusterslabelmat
+% plot(stat.time, zeros(size(stat.time)), 'k');           % this is plotting a horizontal line to use as the x-axis
+% hold on;
+% title( ['Grand average cluster plot'], 'FontSize', 18); % puts a title on the plot
+% set(gca, 'YLim', [0, length(stat.label)]);              % Sets the y-limit. This is based on my number of channels;
+%     
+% % Iterate through the channels, plotting a scatter of the 'active'
+% % timepoints in each channel.
+%  for chan= 1:length(stat.label)
+%   value = stat.stat(chan, find(thing(chan,:)));
+%   scatter(stat.time(find(thing(chan,:))), zeros(size(find(thing(chan,:))))+chan, 9,value, 'filled');
+%  end
+%    
+%  % Edit the axes
+%  set(gca, 'YTick', 0:length(stat.label), 'YTickLabel', [{''}; stat.label], 'XLim', [min(stat.time) max(stat.time)]); %This sets the y-axis ticks to be channel labels, instead of numbers
+%  xlabel('Time (seconds)', 'FontSize', 16);              % Sets pretty x- and y-labels
+%  ylabel('Channel', 'FontSize', 14');
+%  set(gcf, 'Color', 'w');                                % gives a white background
+%   
+%  % sets the legend
+%  colorbar;
+%  colormap(redblue);
+%  caxis([-5 5]);
+%  h = colorbar;
+%  xlabel(h,'T-values');

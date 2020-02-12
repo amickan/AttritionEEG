@@ -1,5 +1,6 @@
-%%% Permutation script for oscillations
+%%% Interference - Oscillations - Permutation and plotting - Median splits
 
+%% load data
 subjects = [301:302, 304:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 
@@ -15,16 +16,14 @@ cfg.t_ftimwin    = 3 ./ cfg.foi;                   % ones(length(cfg.foi),1).*0.
 cfg.toi          = -0.5:0.05:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
 
 Condition1 = cell(1,length(subjects));
+Condition2 = cell(1,length(subjects));
+
 for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_mediansplit_high_1');
     dummy = load(filename1);
     Condition1{i} = ft_freqanalysis(cfg, dummy.up4);
     clear dummy
-end
-
-Condition2 = cell(1,length(subjects));
-for i = 1:length(subjects)
     % condition 2 for each participant
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_mediansplit_low_1');
     dummy2 = load(filename2);
@@ -32,28 +31,20 @@ for i = 1:length(subjects)
     clear dummy2
 end
 
-% calculate the relative difference between the conditions per subject
+%% calculate the relative difference between the conditions per subject
 eff = Condition2;
 for i = 1:length(subjects)
     eff{i}.powspctrm = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
 end
 
-% grand average over subjects
+%% grand average over subjects
 cfg = [];
 cfg.keepindividual='yes';
 effect = ft_freqgrandaverage(cfg, eff{:});
 
-% plot the difference between conditions               
-% one channel
-cfg = [];
-cfg.channel      = {'Cz'};
-%cfg.channel    = {'Fz', 'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2'};
-%cfg.colormap      = redblue;
-cfg.zlim         = [-.18 .18]; %'maxabs'; %[-.18 .18]; %
-figure 
-ft_singleplotTFR(cfg, effect);
+%% Permutation test 
 
-% for stats, create a null structure to compare the average effect to
+% create a null structure to compare the average effect to
 null = effect;
 null.powspctrm = zeros(size(effect.powspctrm));
 
@@ -100,34 +91,34 @@ cfg.design              = design;
 cfg.uvar                = 1;                         % unit variable
 cfg.ivar                = 2;                         % number or list with indices indicating the independent variable(s)
 
-%[stat]                  = ft_freqstatistics(cfg, Condition1{:}, Condition2{:});
 [stat]                 = ft_freqstatistics(cfg, effect, null);
 
-% plot the result
-cfg                     = [];                           %First average over electrodes in the cluster
-cfg.alpha               = 0.05;
-cfg.parameter           = 'stat';
-cfg.zlim                = [-3 3];
-cfg.layout              = 'EEG1010.lay'; %'actiCAP_64ch_Standard2.mat';
-ft_clusterplot(cfg, stat);
+%% Permutation test results 
 
 % get relevant (significant) values
-pos_cluster_pvals = [stat.posclusters(:).prob];
-pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
-pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+if isempty(stat.posclusters) == 0
+    pos_cluster_pvals = [stat.posclusters(:).prob];
+    pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
+    pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+    select = pos_cluster_pvals < stat.cfg.alpha;
+    signclusters = pos_cluster_pvals(select);
+    numberofsignclusters = length(signclusters);
+    disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
+else
+    numberofsignclusters = 0;
+end
 
-neg_cluster_pvals = [stat.negclusters(:).prob];
-neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
-neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
-
-select = pos_cluster_pvals < stat.cfg.alpha;
-selectneg = neg_cluster_pvals < stat.cfg.alpha;
-signclusters = pos_cluster_pvals(select);
-signclustersneg = neg_cluster_pvals(selectneg);
-numberofsignclusters = length(signclusters);
-numberofsignclustersneg = length(signclustersneg);
-disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
-disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+if isempty(stat.negclusters) == 0
+    neg_cluster_pvals = [stat.negclusters(:).prob];
+    neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
+    neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
+    selectneg = neg_cluster_pvals < stat.cfg.alpha;
+    signclustersneg = neg_cluster_pvals(selectneg);
+    numberofsignclustersneg = length(signclustersneg);
+    disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
+else 
+    numberofsignclustersneg = 0;
+end
 
 if numberofsignclusters > 0
     for i = 1:length(signclusters)
@@ -154,3 +145,38 @@ if numberofsignclustersneg > 0
         disp(['The following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
     end
 end
+
+%% Plotting
+
+effect2 = effect;
+effect2.freq = round(effect.freq);  % to circumvent plotting problem with newest fieldtrip version, round frequencies 
+
+% plot the relative difference between conditions
+cfg                 = [];
+%cfg.parameter      = 'stat';
+%cfg.maskparameter  = 'mask';
+%cfg.maskalpha      = 0.2;
+cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
+cfg.zlim            = 'maxabs'; %[-.18 .18]; %
+cfg.masknans        = 'yes';
+figure 
+ft_singleplotTFR(cfg, effect2);
+%ft_singleplotTFR(cfg, stat);
+
+% plotting the topography 
+cfg                 = [];
+cfg.xlim            = [0.51 1];
+cfg.ylim            = [4 7];
+cfg.zlim            = 'maxabs';% [-.1 .1];
+cfg.layout          = 'EEG1010.lay';
+figure
+ft_topoplotTFR(cfg, effect);
+
+cfg                 = [];
+cfg.xlim            = [0.51 1];
+cfg.ylim            = [4 7];
+cfg.zlim            = [-2 2];%'maxabs';% [-.18 .18];
+cfg.layout          = 'EEG1010.lay';
+cfg.parameter       = 'stat';
+figure
+ft_topoplotTFR(cfg, stat);

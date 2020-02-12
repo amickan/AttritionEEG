@@ -1,5 +1,6 @@
-%% Grand average of median splits seperately for tasks 
+%%% Interference - ERPs - grand average for median splits %%%
 
+%% load data 
 subjects = [301:302, 304:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
 
@@ -7,7 +8,10 @@ cfg = [];
 cfg.keeptrials='no';
 cfg.baseline = [-0.2 0];
 
+% initiate empty cell array for subject averages
 Condition1 = cell(1,length(subjects));
+Condition2 = cell(1,length(subjects));
+
 for i = 1:length(subjects)
     % condition 1 for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_high_av');
@@ -15,36 +19,25 @@ for i = 1:length(subjects)
     Condition1{i} = ft_timelockanalysis(cfg, dummy.up3);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy filename1
-    disp(subjects(i));
-end
-%save('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\Condition1', 'Condition1', '-v7.3')
-% grand-average over subjects per condition 
-cfg = [];
-cfg.keepindividual='no';
-cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
-%clear Condition1
-
-% load data Condition 2
-cfg = [];
-cfg.keeptrials='no';
-cfg.baseline = [-0.2 0];
-Condition2 = cell(1,length(subjects));
-for i = 1:length(subjects)
+    
     % condition 2 for each participant
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_low_av');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.low3);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2 filename2
+    
     disp(subjects(i));
 end
-% grand-average over subjects per condition 
+
+%% grand-average over subjects per condition
 cfg = [];
 cfg.keepindividual='no';
+cond1 = ft_timelockgrandaverage(cfg, Condition1{:});
 cond2 = ft_timelockgrandaverage(cfg, Condition2{:});
-%clear Condition2
 
-% manual plot with some electrodes
+%% Plotting 
+
 fig = figure;
 
 subplot(8,8,3);
