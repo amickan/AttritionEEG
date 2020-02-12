@@ -1,9 +1,9 @@
-%%%%%oscillations %%%
-%% load data from both sessions
-subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
-cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
+%%%% Final test Oscillations - testing for an interaction between rounds %%%
+%% load data 
+subjects        = [301:308, 310:326, 328, 329];     % subjects that should be included in grand average
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');    % directory with all preprocessed files 
 
-% frequency decomposition setting
+% settings for frequency decomposition
 cfg              = [];
 cfg.output       = 'pow';
 cfg.channel      = 'EEG';
@@ -13,124 +13,69 @@ cfg.foi          = 2:1:30;                         % analysis 4 to 30 Hz in step
 cfg.t_ftimwin    = 3 ./ cfg.foi;                    %ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
 cfg.toi          = -0.5:0.05:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
 cfg.pad          = 'nextpow2';
-Condition1 = cell(1,27);
-for i = 1:length(subjects)
-    % condition 1 for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
-    dummy = load(filename1);
-    Condition1{i} = ft_freqanalysis(cfg, dummy.data_cond1);
-    clear dummy
-end
 
-% frequency decomposition settings
-cfg              = [];
-cfg.output       = 'pow';
-cfg.channel      = 'EEG';
-cfg.method       = 'mtmconvol';
-cfg.taper        = 'hanning';
-cfg.foi          = 2:1:30;                         % analysis 4 to 30 Hz in steps of 1 Hz 
-cfg.t_ftimwin    = 3 ./ cfg.foi;                    %ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
-cfg.toi          = -0.5:0.05:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
-cfg.pad          = 'nextpow2'; 
-Condition2 = cell(1,27);
-for i = 1:length(subjects)
-    % condition 2 for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
-    dummy2 = load(filename2);
-    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_cond2);
-    clear dummy2
-end
+% initiate empty cell arrays per condition for subject averages 
+Condition1      = cell(1,length(subjects));
+Condition2      = cell(1,length(subjects));
+Condition12     = cell(1,length(subjects));
+Condition22     = cell(1,length(subjects));
 
-% frequency decomposition settings
-cfg              = [];
-cfg.output       = 'pow';
-cfg.channel      = 'EEG';
-cfg.method       = 'mtmconvol';
-cfg.taper        = 'hanning';
-cfg.foi          = 2:1:30;                         % analysis 4 to 30 Hz in steps of 1 Hz 
-cfg.t_ftimwin    = 3 ./ cfg.foi;                    %ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
-cfg.toi          = -0.5:0.05:1.5;
-cfg.pad          = 'nextpow2'; 
-Condition12 = cell(1,27);
 for i = 1:length(subjects)
-    % condition 1 for each participan
+    % condition 1 first half for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
     dummy = load(filename1);
-    Condition12{i} = ft_freqanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_freqanalysis(cfg, dummy.data_finaltestcond1);
     clear dummy
-end
-
-cfg              = [];
-cfg.output       = 'pow';
-cfg.channel      = 'EEG';
-cfg.method       = 'mtmconvol';
-cfg.taper        = 'hanning';
-cfg.foi          = 2:1:30;                         % analysis 4 to 30 Hz in steps of 1 Hz 
-cfg.t_ftimwin    = 3 ./ cfg.foi;                    %ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
-cfg.toi          = -0.5:0.05:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
-cfg.pad          = 'nextpow2'; 
-Condition22 = cell(1,27);
-for i = 1:length(subjects)
-    % condition 2 for each participant
+    % condition 2 first half for each participant
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
     dummy2 = load(filename2);
-    Condition22{i} = ft_freqanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_finaltestcond2);
     clear dummy2
+    % condition 1 second half for each participan
+    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    dummy12 = load(filename12);
+    Condition12{i} = ft_freqanalysis(cfg, dummy12.data_cond1);
+    clear dummy12
+     % condition 2 second half for each participant
+    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    dummy22 = load(filename22);
+    Condition22{i} = ft_freqanalysis(cfg, dummy22.data_cond2);
+    clear dummy22
 end
 
-% difference waves
+%% calculate difference waves for each round (i.e. half of the data)for i=1:length(Condition1)
 for i=1:length(Condition1)
-    DiffRound2{i} = Condition1{i};
-    DiffRound2{i}.powspctrm = Condition1{i}.powspctrm - Condition2{i}.powspctrm ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
+    DiffRound1{i}           = Condition1{i};
+    DiffRound1{i}.powspctrm = Condition1{i}.powspctrm - Condition2{i}.powspctrm ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
 end
 
 for i=1:length(Condition12)
-    DiffRound1{i} = Condition12{i};
-    DiffRound1{i}.powspctrm = Condition12{i}.powspctrm - Condition22{i}.powspctrm ./ ((Condition12{i}.powspctrm + Condition22{i}.powspctrm)/2);
+    DiffRound2{i}           = Condition12{i};
+    DiffRound2{i}.powspctrm = Condition12{i}.powspctrm - Condition22{i}.powspctrm ./ ((Condition12{i}.powspctrm + Condition22{i}.powspctrm)/2);
 end
-
-% average powerspectrum 
-% for i=1:length(Condition1)
-%  AvgCond1{i} = Condition1{i};
-%  AvgCond1{i}.powspctrm = (Condition1{i}.powspctrm + Condition12{i}.powspctrm)./2;
-% end
-% 
-% for i=1:length(Condition2)
-%  AvgCond2{i} = Condition1{i};
-%  AvgCond2{i}.powspctrm = (Condition2{i}.powspctrm + Condition22{i}.powspctrm)./2;
-% end
 
 clear Condition1 Condition2 Condition12 Condition22
 
-% grand average
-cfg = [];
-cfg.keepindividual='yes';
-GAdiffRound2 = ft_freqgrandaverage(cfg, DiffRound2{:});
-GAdiffRound1 = ft_freqgrandaverage(cfg, DiffRound1{:});
+%% grand average the difference
+cfg                         = [];
+cfg.keepindividual          = 'yes';
+GAdiffRound2                = ft_freqgrandaverage(cfg, DiffRound2{:});
+GAdiffRound1                = ft_freqgrandaverage(cfg, DiffRound1{:});
 
-% grand average over avgerages
-%cfg = [];
-%cfg.keepindividual='yes';
-%GAdiffCond2 = ft_freqgrandaverage(cfg, AvgCond2{:});
-%GAdiffCond1 = ft_freqgrandaverage(cfg, AvgCond1{:});
-
-
-%%% Permutation test %%%%
+%% Permutation test
 
 % Create neighbourhood structure
 cfg_neighb                  = [];
-cfg_neighb.method           = 'distance';        
+cfg_neighb.method           = 'triangulation';        
 cfg_neighb.channel          = 'EEG';
 cfg_neighb.layout           = 'EEG1010.lay';
-%cfg_neighb.layout           = 'actiCAP_64ch_Standard2.mat';
 cfg_neighb.feedback         = 'yes';
 cfg_neighb.neighbourdist    = 0.15; % higher number: more is linked!
 neighbours                  = ft_prepare_neighbours(cfg_neighb, DiffRound1{1});
-%neighbours                  = ft_prepare_neighbours(cfg_neighb, AvgCond1{1});
 
 clear DiffRound2 DiffRound1
 
-% Permutation test
+% stats settings
 cfg = [];
 cfg.channel          = {'EEG'};
 cfg.latency          = [0 1];
@@ -166,6 +111,8 @@ cfg.ivar                = 2;                                % number or list wit
 
 [stat]                  = ft_freqstatistics(cfg, GAdiffRound1, GAdiffRound2);
 
+%% Permutation test evaluation
+
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];
 pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
@@ -174,6 +121,8 @@ pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
 neg_cluster_pvals = [stat.negclusters(:).prob];
 neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
 neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
+
+% Describe significant cluster 
 
 select = pos_cluster_pvals < stat.cfg.alpha;
 selectneg = neg_cluster_pvals < stat.cfg.alpha;

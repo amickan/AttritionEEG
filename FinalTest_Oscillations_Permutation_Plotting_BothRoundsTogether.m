@@ -1,7 +1,9 @@
-%%% Analysis script oscillations - combined both rounds %%%
+%%% Final test - Oscillations - Analysis and plotting script - combined both rounds because no interaction between rounds %%%
 
-% read in subjects
-subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
+%% load data 
+subjects        = [301:308, 310:326, 328, 329];     % subjects that should be included in grand average
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');    % directory with all preprocessed files 
+
 % some global settings for plotting later on 
 set(groot,'DefaultFigureColormap',jet);
 
@@ -12,12 +14,14 @@ cfg.channel      = 'EEG';
 cfg.method       = 'mtmconvol';
 cfg.taper        = 'hanning';
 cfg.pad          = 'nextpow2';
-%cfg.baseline     = [-0.5 0];
 cfg.foi          = 2:1:30;                           % analysis 4 to 30 Hz in steps of 1 Hz 
 cfg.t_ftimwin    = 3 ./ cfg.foi;                     % ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
 cfg.toi          = -0.5:0.01:1.5;                    % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
 
-Condition1 = cell(1,length(subjects));
+% initiate empty cell arrays per condition for subject averages 
+Condition1      = cell(1,length(subjects));
+Condition2      = cell(1,length(subjects));
+
 for i = 1:length(subjects)
     % condition 1 first round for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
@@ -27,69 +31,58 @@ for i = 1:length(subjects)
     dummy2 = load(filename2);
     % append data of the two rounds 
     dummy3 = ft_appenddata([], dummy.data_finaltestcond1, dummy2.data_cond1);
+    % manually appending data
     %dummy2.data_cond1.trial = [dummy.data_finaltestcond1.trial, dummy2.data_cond1.trial];
     %dummy2.data_cond1.time = [dummy.data_finaltestcond1.time, dummy2.data_cond1.time];
     %dummy2.data_cond1.sampleinfo =[dummy.data_finaltestcond1.sampleinfo, dummy2.data_cond1.sampleinfo];
     Condition1{i} = ft_freqanalysis(cfg, dummy3);
-    %Condition1{i} = ft_freqbaseline(cfg, Condition1{i});
     clear dummy
     clear dummy2
     clear dummy3
-end
-
-Condition2 = cell(1,length(subjects));
-for i = 1:length(subjects)
-    % condition 1 for each participant
-    filename = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
-    dummy = load(filename);
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
-    dummy2 = load(filename2);
+    
+    % condition 2 first round for each participant
+    filename3 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
+    dummy4 = load(filename3);
+    % condition 2 second round for each participant
+    filename4 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    dummy5 = load(filename4);
     % append data of the two rounds 
-    dummy4 = ft_appenddata([], dummy.data_finaltestcond2, dummy2.data_cond2);
+    dummy6 = ft_appenddata([], dummy4.data_finaltestcond2, dummy5.data_cond2);
+    % manual appending
     %dummy.data_cond2.trial = [dummy.data_cond2.trial, dummy2.data_finaltestcond2.trial];
     %dummy.data_cond2.time = [dummy.data_cond2.time, dummy2.data_finaltestcond2.time];
     %dummy.data_cond2.sampleinfo = [dummy.data_cond2.sampleinfo; dummy2.data_finaltestcond2.sampleinfo];
-    Condition2{i} = ft_freqanalysis(cfg, dummy4);
-    %Condition2{i} = ft_freqbaseline(cfg, Condition2{i});
-    clear dummy
-    clear dummy2
+    Condition2{i} = ft_freqanalysis(cfg, dummy6);
     clear dummy4
+    clear dummy5
+    clear dummy6
 end
 
-% grand average over the two conditions, for plotting
-cfg = [];
-cfg.keepindividual='yes';
-cond1 = ft_freqgrandaverage(cfg, Condition1{:});
-cond2 = ft_freqgrandaverage(cfg, Condition2{:});
-
-% compute the difference between conditions
-% a positive difference reflects more induced power for the interfered
-% compared to the not interfered items
-diff = cond1;
-diff.powspctrm = (cond1.powspctrm - cond2.powspctrm) ./ ((cond1.powspctrm + cond2.powspctrm)/2);
-
-%% create an effect structure which reflects the differences between conditions relative to the average activity in both conditions 
+%% Calculate the relative differences between conditions per subject 
+% relative to the average activity in both conditions 
 % the effect that results is thus free from noise, higher signal to noise
-% ratio than when comparing the two conditions directly 
-% this effect is also what we plot 
+% ratio than when comparing the two conditions directly  
+
 eff = Condition2;
-% loop
 for i = 1:length(subjects)
     eff{i}.powspctrm = (Condition1{i}.powspctrm - Condition2{i}.powspctrm) ./ ((Condition1{i}.powspctrm + Condition2{i}.powspctrm)/2);
 end
 
-% grand average for weighted effect
+%% grand average the difference 
 cfg = [];
 cfg.keepindividual='yes';
 effect = ft_freqgrandaverage(cfg, eff{:});
 
-null = cond1;
-null.powspctrm = zeros(size(cond1.powspctrm));
+% create a null structure against which to compare the difference between
+% conditions
+null = effect;
+null.powspctrm = zeros(size(effect.powspctrm));
+
+%% Permutation test 
 
 % Create neighbourhood structure
-cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');
 cfg_neighb                  = [];
-cfg_neighb.method           = 'distance';        
+cfg_neighb.method           = 'triangulation';        
 cfg_neighb.channel          = 'EEG';
 cfg_neighb.layout           = 'EEG1010.lay';
 cfg_neighb.feedback         = 'yes';
@@ -113,8 +106,6 @@ cfg.correcttail      = 'prob';
 cfg.alpha            = 0.05;
 cfg.numrandomization = 2000;
 cfg.neighbours          = neighbours; 
-%cfg.avgovertime = 'yes';
-%cfg.avgoverfreq = 'yes';
 
 % Design matrix - within subject design
 subj                    = length(subjects);                % number of participants excluding the ones with too few trials
@@ -132,8 +123,9 @@ cfg.design              = design;                           % design matrix EDIT
 cfg.uvar                = 1;                                % unit variable
 cfg.ivar                = 2;                                % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
 
-%[stat]                  = ft_freqstatistics(cfg, Condition1{:}, Condition2{:});
 [stat]                 = ft_freqstatistics(cfg, effect, null);
+
+%% Permutation test evaluation
 
 % get relevant (significant) values
 pos_cluster_pvals = [stat.posclusters(:).prob];
@@ -143,6 +135,8 @@ pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
 neg_cluster_pvals = [stat.negclusters(:).prob];
 neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
 neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
+
+% Describe significant cluster 
 
 select = pos_cluster_pvals < stat.cfg.alpha;
 selectneg = neg_cluster_pvals < stat.cfg.alpha;
@@ -179,37 +173,36 @@ if numberofsignclustersneg > 0
     end
 end
 
-%%% plotting 
-
-% one channel
+%% Plotting 
 effect2 = effect;
 effect2.freq = round(effect.freq);  % to circumvent plotting problem with newest fieldtrip version, round frequencies 
-cfg = [];
-%cfg.parameter = 'stat';
-%cfg.maskparameter = 'mask';
-%cfg.maskalpha = 0.2;
-cfg.channel    = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
-cfg.zlim         = 'maxabs'; %[-.18 .18]; %
-cfg.masknans = 'yes';
+
+% plot the relative difference between conditions
+cfg                 = [];
+%cfg.parameter      = 'stat';
+%cfg.maskparameter  = 'mask';
+%cfg.maskalpha      = 0.2;
+cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
+cfg.zlim            = 'maxabs'; %[-.18 .18]; %
+cfg.masknans        = 'yes';
 figure 
 ft_singleplotTFR(cfg, effect2);
-%ft_singleplotTFR(cfg, diff);
 %ft_singleplotTFR(cfg, stat);
 
 % plotting the topography 
-cfg = [];
-cfg.xlim = [0.51 1];
-cfg.ylim = [4 7];
-cfg.zlim = 'maxabs';% [-.1 .1];
-cfg.layout = 'EEG1010.lay';
+cfg                 = [];
+cfg.xlim            = [0.51 1];
+cfg.ylim            = [4 7];
+cfg.zlim            = 'maxabs';% [-.1 .1];
+cfg.layout          = 'EEG1010.lay';
 figure
 ft_topoplotTFR(cfg, effect);
 
-cfg = [];
-cfg.xlim = [0.51 1];
-cfg.ylim = [4 7];
-cfg.zlim = [-2 2];%'maxabs';% [-.18 .18];
-cfg.layout = 'EEG1010.lay';
-cfg.parameter = 'stat';
+cfg                 = [];
+cfg.xlim            = [0.51 1];
+cfg.ylim            = [4 7];
+cfg.zlim            = [-2 2];%'maxabs';% [-.18 .18];
+cfg.layout          = 'EEG1010.lay';
+cfg.parameter       = 'stat';
 figure
 ft_topoplotTFR(cfg, stat);
