@@ -16,27 +16,27 @@ Condition22     = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 first half for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
     dummy = load(filename1);
-    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond12);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
     % condition 2 first half for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
     dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond22);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2
     % condition 1 second half for each participan
-    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
     dummy12 = load(filename12);
-    Condition12{i} = ft_timelockanalysis(cfg, dummy12.data_cond1);
+    Condition12{i} = ft_timelockanalysis(cfg, dummy12.data_cond12);
     Condition12{i} = ft_timelockbaseline(cfg, Condition12{i});
     clear dummy12
     % condition 2 second half for each participant
-    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
     dummy22 = load(filename22);
-    Condition22{i} = ft_timelockanalysis(cfg, dummy22.data_cond2);
+    Condition22{i} = ft_timelockanalysis(cfg, dummy22.data_cond22);
     Condition22{i} = ft_timelockbaseline(cfg, Condition22{i});
     clear dummy22
 end
@@ -78,7 +78,7 @@ clear DiffRound2 DiffRound1
 cfg                     = [];
 cfg.method              = 'montecarlo';       
 cfg.channel             = {'EEG'};     
-cfg.latency             = [0.2 0.35];                       %[0.2 0.35];      
+cfg.latency             = [0.35 1]; %[0.2 0.35];                       %[0.2 0.35];      
 cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
 cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding
@@ -88,7 +88,7 @@ cfg.neighbours          = neighbours;
 cfg.tail                = 0;                                % -1, 1 or 0 (default = 0); one-sided or two-sided test
 cfg.clustertail         = 0;
 cfg.alpha               = 0.05;                             % alpha level of the permutation test
-cfg.numrandomization    = 500;                              % number of draws from the permutation distribution
+cfg.numrandomization    = 2000;                              % number of draws from the permutation distribution
 cfg.correcttail         = 'prob';
 
 % Design matrix - within subject design
@@ -122,6 +122,7 @@ if isempty(stat.posclusters) == 0
     disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
 else
     numberofsignclusters = 0;
+    disp('there are no significant positive clusters');
 end
 
 if isempty(stat.negclusters) == 0
@@ -134,6 +135,7 @@ if isempty(stat.negclusters) == 0
     disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
 else 
     numberofsignclustersneg = 0;
+    disp('there are no significant negative clusters');
 end
 
 if numberofsignclusters > 0

@@ -1,0 +1,364 @@
+### Calculate the Item set characteristics for experiment 1
+require(reshape)
+require(data.table)
+require(lsr)
+
+# read in the final test for each participant 
+setwd("U:/PhD/EXPERIMENT 1/DATA")
+A = c(202,203,204,205,206,207,208,209,211,212,214,215,216,217,218,219,220,221,223,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245,246,247,248,250,251) ## 225 left out (didn't reach initial learning criterion). 213 did not show up for T2, 242 did not learn enough
+
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  infile1 <- paste(pNumber,"Posttest.txt",sep="_")
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  data_list[[i]] <- currentFile
+}
+data <- rbindlist(data_list)
+
+### Syllable length in Spanish, stats per person 
+# make a table with the average, sd and min and max values for their interference and no interference sets 
+setwd("U:/PhD/SCRIPTS")
+length <- read.delim("Masterfile_DutchNEW.txt")
+
+for (i in 1:nrow(data)) {
+  num <- which(tolower(as.character(length$?..English )) == tolower(as.character(data$Item[i])))
+  data$LengthSpan[i]<- length$Syllable_Spa[num]
+}
+
+lengthtab <- matrix(NA,43,10)
+lengthtab[,1] <- row.names(tapply(data$LengthSpan, list(data$Subject_nr, data$Condition), mean))
+lengthtab[,2:3] <- tapply(data$LengthSpan, list(data$Subject_nr, data$Condition), mean)
+lengthtab[,4:5] <- tapply(data$LengthSpan, list(data$Subject_nr, data$Condition), sd)
+lengthtab[,6:7] <- tapply(data$LengthSpan, list(data$Subject_nr, data$Condition), min)
+lengthtab[,8:9] <- tapply(data$LengthSpan, list(data$Subject_nr, data$Condition), max)
+
+group <- rep(1,19)
+group <- c(group, rep(2,23))
+group <- c(group, 1)
+lengthtab[,10] <- group
+
+colnames(lengthtab) <- c("PP","MeanInt", "MeanNoInt", "SDInt", "SDNoInt", "MinInt", "MinNoInt", "MaxInt", "MaxNoInt", "Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+tapply(as.numeric(lengthtab[,2]), lengthtab[,10], mean)
+tapply(as.numeric(lengthtab[,3]), lengthtab[,10], mean)
+tapply(as.numeric(lengthtab[,4]), lengthtab[,10], mean)
+tapply(as.numeric(lengthtab[,5]), lengthtab[,10], mean)
+tapply(as.numeric(lengthtab[,6]), lengthtab[,10], min)
+tapply(as.numeric(lengthtab[,7]), lengthtab[,10], min)
+tapply(as.numeric(lengthtab[,8]), lengthtab[,10], max)
+tapply(as.numeric(lengthtab[,9]), lengthtab[,10], max)
+
+### Word frequency in Dutch (log)
+setwd("U:/PhD/EXPERIMENT 1")
+celex <- read.delim("CelexNL_corrected.txt")
+
+for (i in 1:nrow(data)) {
+  if (length(num)==1){
+  num <- which(tolower(as.character(length$?..English)) == tolower(as.character(data$Item[i])))
+  data$Dutch[i]<- as.character(length$Dutch[num])} 
+  else {
+    data$Dutch[i]<-NA
+  }
+} 
+
+for (i in 1:nrow(data)) {
+  num <- which(tolower(as.character(celex$Word )) == tolower(as.character(data$Dutch[i])))
+  if (length(num)==1){
+  data$NLFreqLog[i]<- celex$InlLog[num]
+  data$NLFreqMln[i]<- celex$InlMln[num]}
+  else {
+    data$NLFreqLog[i]<- NA
+    data$NLFreqMln[i]<- NA
+  }
+}
+
+freq <- matrix(NA,43,10)
+freq[,1] <- row.names(tapply(data$NLFreqLog, list(data$Subject_nr, data$Condition), mean))
+freq[,2:3] <- tapply(data$NLFreqLog, list(data$Subject_nr, data$Condition), mean)
+freq[,4:5] <- tapply(data$NLFreqLog, list(data$Subject_nr, data$Condition), sd)
+freq[,6:7] <- tapply(data$NLFreqLog, list(data$Subject_nr, data$Condition), min)
+freq[,8:9] <- tapply(data$NLFreqLog, list(data$Subject_nr, data$Condition), max)
+
+group <- rep(1,19)
+group <- c(group, rep(2,23))
+group <- c(group, 1)
+freq[,10] <- group
+
+colnames(freq) <- c("PP","MeanInt", "MeanNoInt", "SDInt", "SDNoInt", "MinInt", "MinNoInt", "MaxInt", "MaxNoInt", "Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+tapply(as.numeric(freq[,2]), freq[,10], mean)
+tapply(as.numeric(freq[,3]), freq[,10], mean)
+tapply(as.numeric(freq[,4]), freq[,10], mean)
+tapply(as.numeric(freq[,5]), freq[,10], mean)
+tapply(as.numeric(freq[,6]), freq[,10], min)
+tapply(as.numeric(freq[,7]), freq[,10], min)
+tapply(as.numeric(freq[,8]), freq[,10], max)
+tapply(as.numeric(freq[,9]), freq[,10], max)
+
+# and the same for per million frequency
+freq <- matrix(NA,43,10)
+freq[,1] <- row.names(tapply(data$NLFreqMln, list(data$Subject_nr, data$Condition), mean))
+freq[,2:3] <- tapply(data$NLFreqMln, list(data$Subject_nr, data$Condition), mean)
+freq[,4:5] <- tapply(data$NLFreqMln, list(data$Subject_nr, data$Condition), sd)
+freq[,6:7] <- tapply(data$NLFreqMln, list(data$Subject_nr, data$Condition), min)
+freq[,8:9] <- tapply(data$NLFreqMln, list(data$Subject_nr, data$Condition), max)
+
+group <- rep(1,19)
+group <- c(group, rep(2,23))
+group <- c(group, 1)
+freq[,10] <- group
+
+colnames(freq) <- c("PP","MeanInt", "MeanNoInt", "SDInt", "SDNoInt", "MinInt", "MinNoInt", "MaxInt", "MaxNoInt", "Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+tapply(as.numeric(freq[,2]), freq[,10], mean)
+tapply(as.numeric(freq[,3]), freq[,10], mean)
+tapply(as.numeric(freq[,4]), freq[,10], mean)
+tapply(as.numeric(freq[,5]), freq[,10], mean)
+tapply(as.numeric(freq[,6]), freq[,10], min)
+tapply(as.numeric(freq[,7]), freq[,10], min)
+tapply(as.numeric(freq[,8]), freq[,10], max)
+tapply(as.numeric(freq[,9]), freq[,10], max)
+
+### Levenshtein distance in Spanish
+require(stringdist)
+
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber <- A[i]
+  matrix <- stringdistmatrix(as.character(data[data$Subject_nr==pNumber,]$Label), as.character(data[data$Subject_nr==pNumber,]$Label),method = "lv")
+  newmat <- lower.tri(matrix, diag = F)
+  newmatt <- matrix[newmat]
+  data_list[[i]] <- newmatt
+}
+
+# extract averages, sd, min and max per list (i.e. per person)
+levs <- matrix(NA,43,6)
+for (i in 1: length(data_list)){
+  temp <- data_list[[i]]
+  levs[i,1]<-A[i]
+  levs[i,2]<-mean(temp)
+  levs[i,3]<-sd(temp)
+  levs[i,4]<-min(temp)
+  levs[i,5]<-max(temp)
+}
+levs[,6]<-group
+
+colnames(levs) <- c("PP","Mean", "SD", "Min", "Max","Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+tapply(as.numeric(levs[,2]), levs[,6], mean)
+tapply(as.numeric(levs[,3]), levs[,6], mean)
+tapply(as.numeric(levs[,4]), levs[,6], min)
+tapply(as.numeric(levs[,5]), levs[,6], max)
+
+### Semantic similarity across-set 
+setwd("U:/PhD/EXPERIMENT 1")
+
+data_list <- list()
+
+for (i in 1:length(A)){
+  sim <- read.csv("NLsimilarities.csv")
+  k <- 1
+  l <- 1
+  cond1 <- NA
+  cond2 <- NA
+  
+  pNumber <- A[i]
+  pp <- data[data$Subject_nr==pNumber,]
+  condOne <- pp[pp$Condition==1,]
+  condTwo <- pp[pp$Condition==2,]
+  
+  for (j in (1:nrow(condOne))){
+    num <- which(tolower(as.character(sim$X)) == condOne$Dutch[j])
+    cond1[k]<-num
+    k <- k+1}
+  
+  for (m in (1:nrow(condTwo))){
+    num <- which(tolower(as.character(sim$X)) == condTwo$Dutch[m])
+    cond2[l]<-num
+    l <- l+1}
+  
+  sim[,-1] -> sim
+  sim[cond1,cond2]->AcrossSim
+  newmat <- lower.tri(AcrossSim, diag = F)
+  newmatt <- AcrossSim[newmat]
+  as.numeric(as.matrix(newmatt)) -> newmatt
+  data_list[[i]] <- newmatt
+}
+
+# extract averages, sd, min and max per list (i.e. per person)
+acr <- matrix(NA,43,6)
+for (i in 1: length(data_list)){
+  temp <- data_list[[i]]
+  acr[i,1]<-A[i]
+  acr[i,2]<-mean(temp)
+  acr[i,3]<-sd(temp)
+  acr[i,4]<-min(temp)
+  acr[i,5]<-max(temp)
+}
+acr[,6]<-group
+
+colnames(acr) <- c("PP","Mean", "SD", "Min", "Max","Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+tapply(as.numeric(acr[,2]), acr[,6], mean)
+tapply(as.numeric(acr[,3]), acr[,6], mean)
+tapply(as.numeric(acr[,4]), acr[,6], min)
+tapply(as.numeric(acr[,5]), acr[,6], max)
+
+
+### Semantic similarity within-set 
+setwd("U:/PhD/EXPERIMENT 1")
+
+data_list <- list()
+data_list2 <- list()
+
+for (i in 1:length(A)){
+  sim <- read.csv("NLsimilarities.csv")
+  k <- 1
+  l <- 1
+  cond1 <- NA
+  cond2 <- NA
+  
+  pNumber <- A[i]
+  pp <- data[data$Subject_nr==pNumber,]
+  condOne <- pp[pp$Condition==1,]
+  condTwo <- pp[pp$Condition==2,]
+  
+  for (j in (1:nrow(condOne))){
+    num <- which(tolower(as.character(sim$X)) == condOne$Dutch[j])
+    cond1[k]<-num
+    k <- k+1}
+  
+  for (m in (1:nrow(condTwo))){
+    num <- which(tolower(as.character(sim$X)) == condTwo$Dutch[m])
+    cond2[l]<-num
+    l <- l+1}
+  
+  sim[,-1] -> sim
+  sim[cond1,cond1]->Within1
+  sim[cond2,cond2]->Within2
+  
+  newmat <- lower.tri(Within1, diag = F)
+  newmatt <- Within1[newmat]
+  as.numeric(as.matrix(newmatt)) -> newmatt
+  data_list[[i]] <- newmatt
+  
+  newmat2 <- lower.tri(Within2, diag = F)
+  newmatt2 <- Within2[newmat2]
+  as.numeric(as.matrix(newmatt2)) -> newmatt2
+  data_list2[[i]] <- newmatt2
+}
+
+# extract averages, sd, min and max per list (i.e. per person)
+with1 <- matrix(NA,43,6)
+for (i in 1: length(data_list)){
+  temp <- data_list[[i]]
+  with1[i,1]<-A[i]
+  with1[i,2]<-mean(temp)
+  with1[i,3]<-sd(temp)
+  with1[i,4]<-min(temp)
+  with1[i,5]<-max(temp)
+}
+with1[,6]<-group
+
+colnames(with1) <- c("PP","Mean", "SD", "Min", "Max","Group")
+
+with2 <- matrix(NA,43,6)
+for (i in 1: length(data_list2)){
+  temp <- data_list2[[i]]
+  with2[i,1]<-A[i]
+  with2[i,2]<-mean(temp)
+  with2[i,3]<-sd(temp)
+  with2[i,4]<-min(temp)
+  with2[i,5]<-max(temp)
+}
+with2[,6]<-group
+
+colnames(with2) <- c("PP","Mean", "SD", "Min", "Max","Group")
+
+# take the average of the averages, sds and take the absolute min and max 
+#Condition 1
+tapply(as.numeric(with1[,2]), with1[,6], mean)
+tapply(as.numeric(with1[,3]), with1[,6], mean)
+tapply(as.numeric(with1[,4]), with1[,6], min)
+tapply(as.numeric(with1[,5]), with1[,6], max)
+#Condition 2
+tapply(as.numeric(with2[,2]), with2[,6], mean)
+tapply(as.numeric(with2[,3]), with2[,6], mean)
+tapply(as.numeric(with2[,4]), with2[,6], min)
+tapply(as.numeric(with2[,5]), with2[,6], max)
+
+#### Filler items #####
+
+# read in the familiarization of the interference phase per participant 
+setwd("U:/PhD/EXPERIMENT 1/DATA/Interference")
+A = c(202,203,204,205,206,207,208,209,211,212,214,215,216,217,218,219,220,221,223,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245,246,247,248,250,251) ## 225 left out (didn't reach initial learning criterion). 213 did not show up for T2, 242 did not learn enough
+
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  infile1 <- paste(pNumber,"IntFamiliarization.txt",sep="_")
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  data_list[[i]] <- currentFile
+}
+data <- rbindlist(data_list)
+
+setwd("U:/PhD/SCRIPTS")
+trans <- read.delim("trans.txt")
+
+for (i in 1:nrow(data)){
+  num = which(trans$wordseng == data$Item[i])
+  data$Dutch[i] <- as.character(trans$wordsnl[num[1]])
+  
+}
+
+# subset to filler items only 
+fillers <- data[data$Condition==3,]
+
+# add word length 
+for (i in 1:nrow(fillers)){
+  num = which(trans$wordseng == fillers$Item[i])
+  fillers$LenNL[i] <- trans$nllen[num[1]]
+  fillers$LenEng[i] <- trans$englen[num[1]]
+  
+}
+
+mean(tapply(fillers$LenNL, list(fillers$Subject_nr, fillers$Language_Condition), mean)[,2], na.rm = T)
+mean(tapply(fillers$LenNL, list(fillers$Subject_nr, fillers$Language_Condition), sd)[,2], na.rm = T)
+tapply(fillers$LenNL, list(fillers$Subject_nr, fillers$Language_Condition), min)
+tapply(fillers$LenNL, list(fillers$Subject_nr, fillers$Language_Condition), max)
+
+mean(tapply(fillers$LenEng, list(fillers$Subject_nr, fillers$Language_Condition), mean)[,1], na.rm = T)
+mean(tapply(fillers$LenEng, list(fillers$Subject_nr, fillers$Language_Condition), sd)[,1], na.rm = T)
+tapply(fillers$LenEng, list(fillers$Subject_nr, fillers$Language_Condition), min)
+tapply(fillers$LenEng, list(fillers$Subject_nr, fillers$Language_Condition), max)
+
+# add frequency Dutch
+setwd("U:/PhD/EXPERIMENT 1")
+celex <- read.delim("CelexNL_corrected.txt")
+
+for (i in 1:nrow(fillers)) {
+  num <- which(tolower(as.character(celex$Word)) == tolower(as.character(fillers$Dutch[i])))
+  if (length(num)==1){
+    fillers$NLFreqLog[i]<- celex$InlLog[num]
+    fillers$NLFreqMln[i]<- celex$InlMln[num]}
+  else {
+    fillers$NLFreqLog[i]<- NA
+    fillers$NLFreqMln[i]<- NA
+  }
+}
+
+mean(tapply(fillers$NLFreqLog, list(fillers$Subject_nr, fillers$Language_Condition), mean)[,1], na.rm = T)
+mean(tapply(fillers$NLFreqLog, list(fillers$Subject_nr, fillers$Language_Condition), sd)[,1], na.rm = T)
+tapply(fillers$NLFreqLog, list(fillers$Subject_nr, fillers$Language_Condition), min)
+tapply(fillers$NLFreqLog, list(fillers$Subject_nr, fillers$Language_Condition), max)
+
+mean(tapply(fillers$NLFreqMln, list(fillers$Subject_nr, fillers$Language_Condition), mean)[,2], na.rm = T)
+mean(tapply(fillers$NLFreqMln, list(fillers$Subject_nr, fillers$Language_Condition), sd)[,2], na.rm = T)
+tapply(fillers$NLFreqMln, list(fillers$Subject_nr, fillers$Language_Condition), min)
+tapply(fillers$NLFreqMln, list(fillers$Subject_nr, fillers$Language_Condition), max)

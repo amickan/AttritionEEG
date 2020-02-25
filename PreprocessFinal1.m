@@ -4,9 +4,11 @@ function PreprocessFinal1(pNumber)
 
     % define files for this participant
     vhdr = strcat(num2str(pNumber), '\Day3\EEG\',num2str(pNumber), '.vhdr');
-    preprocFile = strcat('PreprocessedData_firsthalf\', num2str(pNumber), '_FinalTestPart1_data_all_preprocessed');
-    cond1out = strcat('PreprocessedData_firsthalf\', num2str(pNumber), '_data_clean_1_cond1');
-    cond2out = strcat('PreprocessedData_firsthalf\', num2str(pNumber), '_data_clean_1_cond2');
+    preprocFile = strcat('PreprocessedData_firsthalf_new\', num2str(pNumber), '_FinalTestPart1_data_all_preprocessed');
+    cond1out = strcat('PreprocessedData_firsthalf_new\', num2str(pNumber), '_data_clean_1_cond1');
+    cond2out = strcat('PreprocessedData_firsthalf_new\', num2str(pNumber), '_data_clean_1_cond2');
+    cond12out = strcat('PreprocessedData_firsthalf_new\', num2str(pNumber), '_data_clean_1_cond1_witherrors');
+    cond22out = strcat('PreprocessedData_firsthalf_new\', num2str(pNumber), '_data_clean_1_cond2_witherrors');
 
     % defining settings for trial selection
     cfg                     = [];
@@ -235,18 +237,28 @@ function PreprocessFinal1(pNumber)
     cfg                 = [];
     cfg.trials          = find((data_clean.trialinfo(:,9) == 1)& (data_clean.trialinfo(:,3) == 2)); 
     data_cond2          = ft_selectdata(cfg, data_clean);
+    cfg                 = [];
+    cfg.trials          = find((data_clean.trialinfo(:,10) == 1)& (data_clean.trialinfo(:,3) == 1)); 
+    data_cond12         = ft_selectdata(cfg, data_clean);
+    cfg                 = [];
+    cfg.trials          = find((data_clean.trialinfo(:,10) == 1)& (data_clean.trialinfo(:,3) == 2)); 
+    data_cond22         = ft_selectdata(cfg, data_clean);
     
     save(cond1out, 'data_cond1');
     save(cond2out, 'data_cond2');
+    save(cond12out, 'data_cond12');
+    save(cond22out, 'data_cond22');
 
     % document how many trials were kept for later analysis
     c1 = length(data_cond1.trial);
     c2 = length(data_cond2.trial);
+    c3 = length(data_cond12.trial);
+    c4 = length(data_cond22.trial);
     
     % save trial information in txt
-    fid = fopen('TrialCount_PostPreprocessing_FirstHalf.txt','a');
-    formatSpec = '%d\t%d\t%d\n';
-    fprintf(fid,formatSpec,pNumber,c1,c2);
+    fid = fopen('TrialCount_PostPreprocessing_FirstHalf_New.txt','a');
+    formatSpec = '%d\t%d\t%d\t%d\t%d\n';
+    fprintf(fid,formatSpec,pNumber,c1,c2,c3,c4);
     
     % calculating average for this pp 
     %cfg = [];
@@ -266,8 +278,8 @@ function PreprocessFinal1(pNumber)
     
     disp('##############################################');
     disp(['## Done preprocessing first half PP_', num2str(pNumber),' ################']);
-    disp(['## Trials for interference condition: ', num2str(c1), ' #####']);
-    disp(['## Trials for no-interference condition: ', num2str(c2),' ##']);
+    %disp(['## Trials for interference condition: ', num2str(c1), ' #####']);
+    %disp(['## Trials for no-interference condition: ', num2str(c2),' ##']);
     disp('##############################################');
     
     % change this to your Github folder directory

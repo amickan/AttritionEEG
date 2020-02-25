@@ -4,6 +4,11 @@
 
 require(reshape)
 require(data.table)
+require(plyr)
+require(ggplot2)
+require(lme4)
+require(lmerTest)
+require(lmtest)
 
 #A = c(301:329)
 A = c(301:308, 310:326, 328, 329) # only including the participants that also enter the EEG analysis
@@ -221,9 +226,9 @@ for (i in 1:length(A)){
   
 
   # safe the new Final test file for the NewMarker.m script
-  setwd(wd1)
-  outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
-  write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
+  #setwd(wd1)
+  #outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
+  #write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
   
   # safe the file with the relevant behavioral information as text (for preprocessing script)
   # columns as follows: TrialNr, Condition, VoiceOnset, TypeError, Not learned in Spanish, unknown in English, known in Italian, Read in
@@ -231,15 +236,15 @@ for (i in 1:length(A)){
   #outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
   #write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
   
-  print("###")
-  print(pNumber)
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_1) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_1==1,]))
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_1) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_1==2,]))
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_2) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr>70 & currentFile2$MedianGroup_2==1,]))
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_2) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr>70 & currentFile2$MedianGroup_2==2,]))
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_av) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_av==1,]))
-  print(nrow(currentFile2[is.na(currentFile2$MedianGroup_av) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_av==2,]))
-  print("###")
+  #print("###")
+  #print(pNumber)
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_1) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_1==1,]))
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_1) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_1==2,]))
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_2) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr>70 & currentFile2$MedianGroup_2==1,]))
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_2) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr>70 & currentFile2$MedianGroup_2==2,]))
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_av) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_av==1,]))
+  #print(nrow(currentFile2[is.na(currentFile2$MedianGroup_av) == 0 & currentFile2$Condition ==1 & currentFile2$Trial_nr<71 & currentFile2$MedianGroup_av==2,]))
+  #print("###")
   
 }
 
@@ -266,8 +271,6 @@ post1 <- post[post$Trial_nr<71,]
 post2 <- post[post$Trial_nr>70,]
 
 ########## Plots with GGplot ###########
-require(plyr)
-require(ggplot2)
 
 ### Fine-grained error rates ###
 post$ErrorRate <- 100-post$Ratio
@@ -366,10 +369,6 @@ barplot + geom_bar(stat="identity", position=position_dodge()) +
 #ggsave("Accuracy.png", width = 12, height = 8, units = "cm", dpi = 1200)
 
 ###### Stats on behavioral results ######
-
-require(lme4)
-require(lmerTest)
-require(lmtest)
 
 setwd("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/")
 lenwords <- read.delim("WordsLengths.txt")
@@ -473,7 +472,7 @@ modelRT2Block <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - BlockN + (1|Item) +
 anova(modelRT2full, modelRT2Block)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelRT2Interaction <- lmer(log(RT_new) ~ ConditionN*BlockN - ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Interaction <- lmer(log(RT_new-2000) ~ ConditionN + BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Interaction)
 # IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
@@ -584,9 +583,131 @@ exposures3<-data.frame(table(adap$Item, adap$Subject_nr))
 exposures3$Freq <- exposures3$Freq + 12
 expavg <- data.frame(tapply(exposures3$Freq, exposures3$Var2, mean))
 
-#### Check coherence of errors from round 1 to round 2 ####
+### Lextale  ####
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  currentFile <- as.data.frame(read.delim(paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_score.txt", sep="")))
+  data_list[[i]] <- currentFile
+  print(A[i])
+}
+lextale <- rbindlist(data_list, use.names=FALSE)
 
-#### Do a median split based on RTs in the final test for EEG analysis of the corresponding trials during the interference phase
-### Do words that were interfered the most (i.e. have the longer RTs at final test) show more evidenec of competition or inhibition during interference?
+# check lextale for participants from English and Dutch conditions
+library(tidyr)
+lexScore <- lextale[-seq(1, nrow(lextale), 2),]
+lexScore <- separate(data = lexScore, col = Number.of.correctly.identified.words..38, into = c("text", "score"), sep = "\\: ")
+lexScore[,2] <- as.numeric(unlist(lexScore[,2]))
 
-# for each person calculate the median RT 
+range(lexScore$score)
+
+### learning success at the end of Day 2 ###
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day2/",pNumber,"_Posttest_Day2", sep="")
+  setwd(wd1)
+  infile1 <- paste(pNumber,"Posttest_Day2.txt",sep="_")
+  
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  
+  if (length(currentFile[currentFile$Error == 999,]$Error) > 0){
+    currentFile[currentFile$Error == 999,]$Error<-1
+  }
+  
+  data_list[[i]] <- currentFile
+  
+  print(A[i])
+}
+learn <- rbindlist(data_list)
+
+m <- 100-(tapply(learn$Error, learn$Subject_nr, sum)/70)*100
+mean(m)
+
+### Familiarization Learning - Day 1 ####
+# How many words were already known to people in Italian
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day1/", sep="")
+  setwd(wd1)
+  infile1 <- paste(pNumber,"Familiarization_Day1.txt",sep="_")
+  
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+ 
+  data_list[[i]] <- currentFile
+  
+  print(A[i])
+}
+famlearn <- rbindlist(data_list)
+
+known <- tapply(famlearn$Known, famlearn$Subject_nr, sum)
+mean(known)
+# 1% of all data
+
+### Familiarization Interference - Day 3 ####
+# How many words were already known to people in Italian
+data_list <- list()
+for (i in 1:length(A)){
+  pNumber = A[i]
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/", pNumber, "_Familiarization", sep="")
+  setwd(wd1)
+  infile1 <- paste(pNumber,"IntFamiliarization.txt",sep="_")
+  
+  currentFile <- as.data.frame(read.delim(infile1, stringsAsFactors=FALSE, sep = "\t", header = T, skipNul = TRUE))
+  
+  data_list[[i]] <- currentFile
+  
+  print(A[i])
+}
+famint <- rbindlist(data_list)
+
+unknown <- as.data.frame(tapply(famint$Error, list(famint$Subject_nr, famint$Condition), sum))
+sd(unknown$`1`)
+sum(unknown$`1`) ## 3,8 % od data 
+nrow(famint[famint$Condition==1,])
+
+
+### NoGo performance ####
+
+data_list2 <- list()
+
+for (i in 1:length(A)){
+  pNumber = A[i]
+  
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/", sep="")
+  setwd(wd1)
+  infile2 <- paste(pNumber,"GoNogo_logfile.txt",sep="_")
+  
+  currentFile2 <- read.delim(infile2)
+  
+  for (j in 1:nrow(currentFile2)){
+    currentFile2$Subject_nr[j] <- pNumber
+  }
+
+  data_list2[[i]] <- currentFile2
+  
+}
+
+nogo <- rbindlist(data_list2)
+
+#### Score calculation NoGo 
+# Calculate accuracy on go vs nogo trials 
+nogo <- nogo[nogo$BlockNr!=0,]
+nogo_final_error <- table(nogo$Error, nogo$Subject_nr)
+
+# checking the false alarm rate (wrongly pressing in nogo trials)
+# define a column that codes for whether a trial was a go or a nogo trial 
+for (i in 1:nrow(nogo)){
+  if (nogo$Condition[i] == "o" & nogo$SquareType[i] == "2") {
+  nogo$trialtype[i] <- "go"}
+  if (nogo$Condition[i] == "o" & nogo$SquareType[i] == "1") {
+    nogo$trialtype[i] <- "nogo"}
+  if (nogo$Condition[i] == "b" & nogo$SquareType[i] == "2") {
+    nogo$trialtype[i] <- "nogo"}
+  if (nogo$Condition[i] == "b" & nogo$SquareType[i] == "1") {
+    nogo$trialtype[i] <- "go"}
+}
+
+FAR <- (nogo_final_error[2,] / 104)*100
+

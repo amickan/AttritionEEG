@@ -22,24 +22,24 @@ Condition22     = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 first half for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
     dummy = load(filename1);
-    Condition1{i} = ft_freqanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_freqanalysis(cfg, dummy.data_cond12);
     clear dummy
     % condition 2 first half for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
     dummy2 = load(filename2);
-    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_freqanalysis(cfg, dummy2.data_cond22);
     clear dummy2
     % condition 1 second half for each participan
-    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
     dummy12 = load(filename12);
-    Condition12{i} = ft_freqanalysis(cfg, dummy12.data_cond1);
+    Condition12{i} = ft_freqanalysis(cfg, dummy12.data_cond12);
     clear dummy12
      % condition 2 second half for each participant
-    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
     dummy22 = load(filename22);
-    Condition22{i} = ft_freqanalysis(cfg, dummy22.data_cond2);
+    Condition22{i} = ft_freqanalysis(cfg, dummy22.data_cond22);
     clear dummy22
 end
 

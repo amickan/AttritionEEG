@@ -1,0 +1,197 @@
+### Script to check semantic similarity, word length and frequency for the word lists ####
+
+### install and load packages 
+library(tidyr)
+
+### Load in data
+# change working directory to where the files are stored that need to read in 
+setwd("//cnas.ru.nl/Wrkgrp/STD-Beatrice_MSc") ## change this to the directory of where you store the files 
+# Reads in a .txt file containing the words that you want in condition 1 and 2  
+# This file should have a column for the Dutch word, the Italian translation, the condition number, 
+# the frequency of the word in Dutch, and the word length in Italian
+wordlist <- read.delim("Masterfile_Exp2.txt", stringsAsFactors=FALSE) 
+# Read in the matrix of similarities for all the possible target words 
+sim <- read.csv("similaritiesTargetsComplete.csv", stringsAsFactors = F)
+
+
+# order the dataframe by condition number 
+wordlist <-wordlist[order(wordlist$Condition),]
+cond1 <- NA
+cond1freq <- NA
+j <- 1
+
+# get the similarity values and frequency information for all items in condition 1 
+for (i in 1:nrow(wordlist)) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i]) # adjust that to the name of the column of the Dutch words if necessary
+  if (length(num)==1 & wordlist$Condition[i]==1) {
+    cond1[j] <- num
+    cond1freq[j] <- wordlist$FreqDutch_Celex_Lg[i] # adjust this to the column name of the frequency information
+    j <- j +1
+  } else if (length(num)!=1 && wordlist$Condition[i]==1) {
+    print(wordlist$Dutch[i])
+  }
+}
+
+cond2 <- NA
+j <- 1
+cond2freq <- NA
+
+# get the similarity values and frequency information for all items in condition 2
+for (i in 1:nrow(wordlist)) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i])
+  if (length(num)==1 && wordlist$Condition[i]==2) {
+    cond2[j] <- num
+    cond2freq[j] <- wordlist$FreqDutch_Celex_Lg[i]
+    j <- j +1
+  }  
+}
+
+# put everything into a matrix 
+sim[,-1] -> sim
+sim[cond1,cond1]->Condition1low
+sim[cond2,cond2]->Condition2low
+
+as.numeric(as.matrix(Condition1low)) -> Cond1Newlow
+as.numeric(as.matrix(Condition2low)) -> Cond2Newlow
+
+newCon1 <- lower.tri(Cond1Newlow, diag = F)
+Cond1Newlowhalf <- Cond1Newlow[newCon1]
+as.numeric(as.matrix(Cond1Newlowhalf)) -> Cond1Newlowhalf
+
+newCon2 <- lower.tri(Cond2Newlow, diag = F)
+Cond2Newlowhalf <- Cond2Newlow[newCon2]
+as.numeric(as.matrix(Cond2Newlowhalf)) -> Cond2Newlowhalf
+
+mean(Cond2Newlowhalf)
+
+
+# T-tests for comparisons
+t.test(Cond1Newlow,Cond2Newlow) # this compares semantic similarity between conditions
+t.test(wordlist[wordlist$Condition==1,]$EnglishLength, wordlist[wordlist$Condition==2,]$EnglishLength) # this compares word length in Itlian 
+t.test(wordlist[wordlist$Condition==1,]$ItalianLength, wordlist[wordlist$Condition==2,]$ItalianLength) # this compares word length in Itlian 
+t.test(cond1freq,cond2freq) # this compares frequency 
+
+### Get all similarity values into one matrix
+# We do this to be able to check whether words from Condition 1 and in any way related to words from Condition 2
+# We want to avoid strong realtionships across conditions 
+# The threshold I usually use to compare is 0.7 (anything underneath is not good)
+# The comparisons have to be done by hand, but the code below puts all relevant information into one big matrix for convenience 
+sim <- read.csv("similaritiesfillers.csv")
+wordlist <-wordlist[order(wordlist$Condition),]
+numbers <- NA
+j <- 1
+for (i in 1:73) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i])
+  if (length(num)==1) {
+    numbers[j] <- num
+    j <- j +1
+  } 
+}
+
+sim[,-1] -> sim
+sim[numbers,numbers] -> sims
+rownames(sims) <- t(colnames(sims))
+
+## Levenshtein distance 
+require(stringdist)
+
+matrix <- stringdistmatrix(as.character(wordlist[wordlist$Condition==2,]$Italian), as.character(wordlist[wordlist$Condition==2,]$Italian),method = "lv")
+newmat <- lower.tri(matrix, diag = F)
+newmatt <- matrix[newmat]
+
+
+##### For fillers #####
+wordlist <- read.delim("completeFinal.txt", stringsAsFactors=FALSE) # this should have all words in it 
+sim <- read.csv("similaritiesfillersnew2.csv") # this should have ALL words in it 
+
+# order the dataframe by condition number 
+wordlist <-wordlist[order(wordlist$Condition),]
+cond1 <- NA
+cond1freq <- NA
+j <- 1
+
+# get the similarity values and frequency information for all items in condition 1 
+for (i in 1:nrow(wordlist)) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i]) # adjust that to the name of the column of the Dutch words if necessary
+  if (length(num)==1 && wordlist$Condition[i]==1) {
+    cond1[j] <- num
+    cond1freq[j] <- wordlist$FreqDutch_Celex_Lg[i] # adjust this to the column name of the frequency information
+    j <- j +1
+  }
+}
+
+cond2 <- NA
+j <- 1
+cond2freq <- NA
+
+# get the similarity values and frequency information for all items in condition 2
+for (i in 1:nrow(wordlist)) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i])
+  if (length(num)==1 && wordlist$Condition[i]==2) {
+    cond2[j] <- num
+    cond2freq[j] <- wordlist$FreqDutch_Celex_Lg[i]
+    j <- j +1
+  }  
+}
+
+fill <- NA
+j <- 1
+fillfreq <- NA
+
+# get the similarity values and frequency information for all items in condition 2
+for (i in 1:nrow(wordlist)) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i])
+  if (length(num)==1 && wordlist$Condition[i]==4) {
+    fill[j] <- num
+    fillfreq[j] <- wordlist$FreqDutch_Celex_Lg[i]
+    j <- j +1
+  } else if (length(num)!=1 && wordlist$Condition[i]==4) {
+    print(wordlist$Dutch[i])
+  }
+}
+
+# put everything into a matrix 
+sim[,-1] -> sim
+sim[cond1,cond1]->Condition1low
+sim[cond2,cond2]->Condition2low
+sim[fill,fill]->Fillerslow
+
+as.numeric(as.matrix(Condition1low)) -> Cond1Newlow
+as.numeric(as.matrix(Condition2low)) -> Cond2Newlow
+as.numeric(as.matrix(Fillerslow)) -> FillerslowNew
+
+### Anovas to check for differences ####
+# for those we don't actually need the above stuff anymore
+#as.numeric(wordlist$FreqDutch_Celex_Lg) -> wordlist$FreqDutch_Celex_Lg
+# subset dataframe
+words <- wordlist[wordlist$Condition!=999,]
+fit <- aov(FreqDutch_Celex_Lg ~ Condition, data = words)
+summary(fit)
+tapply(words$FreqDutch_Celex_Lg, list(words$Condition), mean)
+
+fit2 <- aov(EnglishLength ~ Condition, data = words)
+summary(fit2)
+tapply(words$EnglishLength, list(words$Condition), mean)
+
+
+### Get all similarity values into one matrix
+# We do this to be able to check whether words from Condition 1 and in any way related to words from Condition 2
+# We want to avoid strong realtionships across conditions 
+# The threshold I usually use to compare is 0.7 (anything underneath is not good)
+# The comparisons have to be done by hand, but the code below puts all relevant information into one big matrix for convenience 
+sim <- read.csv("similaritiesfillersnew2.csv")
+wordlist <-wordlist[order(wordlist$Condition),]
+numbers <- NA
+j <- 1
+for (i in 1:105) {
+  num <- which(tolower(as.character(sim$X)) == wordlist$Dutch[i])
+  if (length(num)==1) {
+    numbers[j] <- num
+    j <- j +1
+  } 
+}
+
+sim[,-1] -> sim
+sim[numbers,numbers] -> sims
+rownames(sims) <- t(colnames(sims))
+round(sims,2) -> sims

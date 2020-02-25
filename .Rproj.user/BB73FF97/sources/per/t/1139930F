@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581666017731.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "146063850",
+    "id" : "1139930F",
+    "lastKnownWriteTime" : 1581696606,
+    "last_content_update" : 1581696606966,
+    "path" : "//ru.nl/wrkgrp/STD-Beatrice_MSc/ItemSorting.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "82,17",
+        "scrollLine" : "54"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581667103026.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3561340591",
+    "id" : "720FF48A",
+    "lastKnownWriteTime" : 1552474785,
+    "last_content_update" : 1552474785,
+    "path" : "U:/PhD/EXPERIMENT 1/ItemCharacteristsSummary.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "136,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

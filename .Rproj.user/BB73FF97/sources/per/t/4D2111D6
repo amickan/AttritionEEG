@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581590540253.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4267585546",
+    "id" : "4D2111D6",
+    "lastKnownWriteTime" : 1581610198,
+    "last_content_update" : 1581610198674,
+    "path" : "U:/PhD/EXPERIMENT 2 - EEG/EEG-analysis/ItemCharacteristics.R",
+    "project_path" : "ItemCharacteristics.R",
+    "properties" : {
+        "cursorPosition" : "14,45",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
