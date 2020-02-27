@@ -1,6 +1,8 @@
 %%% Final test - ERPs - Permutation test %%%
 
 %% Loading data 
+% some global settings for plotting later on 
+set(groot,'DefaultFigureColormap',jet);
 
 subjects = [301:308, 310:326, 328, 329]; % subjects that should be included in grand average
 cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
@@ -14,20 +16,18 @@ Condition2 = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 for each participant
-    %filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
+    %filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
     dummy = load(filename1);
-    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond1);
-    %Condition1{i} = ft_timelockanalysis(cfg, dummy.data_finaltestcond1);
+    Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond12);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
     
     % condition 2 for each participant
-    %filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
+    %filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
     dummy2 = load(filename2);
-    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond2);
-    %Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_finaltestcond2);
+    Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond22);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2
 end
@@ -47,7 +47,7 @@ neighbours                  = ft_prepare_neighbours(cfg_neighb, Condition1{1});
 cfg                     = [];
 cfg.method              = 'montecarlo';       
 cfg.channel             = {'EEG'};     
-cfg.latency             = [0.2 0.35];      
+cfg.latency             = [0.35 1]; %[0.2 0.35];      
 cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
 cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding
@@ -98,6 +98,10 @@ if isempty(stat.posclusters) == 0
     pos_cluster_pvals = [stat.posclusters(:).prob];
     pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
     pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
+    selectpos = pos_cluster_pvals < stat.cfg.alpha;
+    signclusterspos = pos_cluster_pvals(selectpos);
+    numberofsignclusterspos = length(signclusterspos);
+    disp(['there are ', num2str(numberofsignclusterspos), ' significant positive clusters']);
 else
     numberofsignclusters = 0;
 end
@@ -114,9 +118,9 @@ else
     numberofsignclustersneg = 0;
 end
 
-if numberofsignclusters > 0
-    for i = 1:length(signclusters)
-        disp(['Positive cluster number ', num2str(i), ' has a p value of ', num2str(signclusters(i))])
+if numberofsignclusterspos > 0
+    for i = 1:length(signclusterspos)
+        disp(['Positive cluster number ', num2str(i), ' has a p value of ', num2str(signclusterspos(i))])
         select = ismember(stat.posclusterslabelmat, pos_signif_clust(i));
         pos2 = ismember (stat.posclusterslabelmat, pos_signif_clust(i));
         [foundx,foundy] = find(select);
@@ -128,14 +132,15 @@ if numberofsignclusters > 0
         %%% Topoplot for the cluster 
         figure;
         %colormap(redblue);
-        %colorbar('eastoutside');
+        colorbar('eastoutside');
         cfg = [];
         cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-3 3];
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        cfg.zlim = [-1.8 1.8];
+        cfg.layout = 'EEG1010.lay';
         ft_topoplotER(cfg, raw);
         
         disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
+        disp(['Negative cluster ', num2str(i), ' has a cluster statistic of ', num2str(stat.posclusters(i).clusterstat), ' and a standard deviation of ',num2str(stat.posclusters(i).stddev),'.'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
         disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
     end
@@ -158,11 +163,13 @@ if numberofsignclustersneg > 0
         colorbar('eastoutside');
         cfg = [];
         cfg.xlim=[starttime endtime];  % in seconds!
-        %cfg.zlim = [-5 5];
-        cfg.layout = 'actiCAP_64ch_Standard2.mat';
+        cfg.zlim = [-1.8 1.8];
+        cfg.layout = 'EEG1010.lay';
         ft_topoplotER(cfg, raw);
         
-        disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
+        
+        disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s']) 
+        disp(['Negative cluster ', num2str(i), ' has a cluster statistic of ', num2str(stat.negclusters(i).clusterstat), ' and a standard deviation of ',num2str(stat.negclusters(i).stddev),'.' ])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
         disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
     end

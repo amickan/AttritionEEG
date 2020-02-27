@@ -1,0 +1,106 @@
+### exclusion criteria for accuracy, RTs, and EEG ###
+
+#### Accuracy  ####
+
+A = c(301:308, 310:326, 328, 329) # only including the participants that also enter the EEG analysis
+data_list <- list()
+
+for (i in 1:length(A)){
+  pNumber = A[i]
+  wd1 <-  paste("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/", pNumber,"/Day3/",pNumber,"_FinalTest", sep="")
+  infile = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
+  
+  setwd(wd1)
+  file <- read.delim(infile, header = F)
+  file$pp <- pNumber
+  
+  data_list[[i]] <- file
+  
+}
+
+list <- rbindlist(data_list)
+
+# column 5: unlearned in Italian 
+(tapply(list$V5, list$pp, sum)/140)*100
+notlearned <- tapply(list$V5, list$pp, sum)/2
+(sum(list$V5)/nrow(list))*100
+
+# column 6: unknown in English
+(tapply(list$V6, list$pp, sum)/140)*100
+unknownEngl <- tapply(list$V6, list$pp, sum)/2
+(sum(list$V6)/nrow(list))*100
+
+# column 7: already known in Italian 
+(tapply(list$V7, list$pp, sum)/140)*100
+knownItal <- tapply(list$V7, list$pp, sum)/2
+(sum(list$V7)/nrow(list))*100
+
+# total of accuracy exclusions
+list$V11 <- 0
+for (i in 1: nrow(list)){
+  if (list$V5[i]==1){
+    list$V11[i] <- 1
+  } 
+  if (list$V6[i]==1){
+    list$V11[i] <- 1
+  }
+  if (list$V7[i]==1){
+    list$V11[i] <- 1
+  }
+  
+}
+
+(sum(list$V11)/nrow(list))*100
+(tapply(list$V11, list$pp, sum)/140)*100
+
+trials <- table(post[is.na(post$Error)==0,]$Subject_nr, post[is.na(post$Error)==0,]$Condition, post[is.na(post$Error)==0,]$Block)
+mean(trials[,1,])
+mean(trials[,2,])
+
+## RT exclusions ##
+trials <- table(post[is.na(post$RT_new)==0,]$Subject_nr, post[is.na(post$RT_new)==0,]$Condition, post[is.na(post$RT_new)==0,]$Block)
+mean(trials[,1,])
+mean(trials[,2,])
+
+(nrow(post[post$Error!=0,])/nrow(post))*100
+(nrow(post[is.na(post$RT_new)==1,])/nrow(post))*100
+
+### EEG analysis excusions ###
+setwd("//cnas.ru.nl/wrkgrp/STD-Back-Up-Exp2-EEG/")
+eegex1 <- read.delim("TrialCount_PostPreprocessing_FirstHalf_New.txt", header = F)
+eegex2 <- read.delim("TrialCount_PostPreprocessing_SecondHalf_WithErrors.txt", header = F)
+
+eegex1 <- eegex1[-c(9,27),]
+
+mean(eegex1[,4]) # interference condition with errors
+mean(eegex1[,5]) # no interference condition with errors
+
+mean(eegex2[,2]) # interference condition with errors
+mean(eegex2[,3]) # no interference condition with errors
+
+eegex1$V6 <- 0
+eegex2$V6 <- 0
+for (i in 1:nrow(eegex1)){
+  eegex1$V6[i] <- sum(notlearned[i], unknownEngl[i], knownItal[i])
+  eegex2$V6[i] <- sum(notlearned[i], unknownEngl[i], knownItal[i])
+
+}
+
+eegex1$V7 <- eegex1$V4 + eegex1$V5
+eegex2$V7 <- eegex2$V2 + eegex2$V3
+
+eegex1$V8 <- eegex1$V7 + eegex1$V6
+eegex2$V8 <- eegex2$V7 + eegex2$V6
+
+m1 <- mean(((70 - eegex1$V8)/70)*100)
+m2 <- mean(((70 - eegex2$V8)/70)*100)
+(m1+m2)/2
+
+### Interference phase EEG ###
+eegint <- read.delim("TrialCount_Interference_PostPreprocessing_MedianSplit.txt", header = F)
+
+mean(eegint[,2]) # interference condition with errors
+mean(eegint[,3]) # no interference condition with errors
+
+mean(eegint[,8]) # interference condition with errors
+mean(eegint[,9]) # no interference condition with errors

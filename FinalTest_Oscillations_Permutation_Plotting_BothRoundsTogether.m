@@ -24,13 +24,13 @@ Condition2      = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 first round for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond1');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
     dummy = load(filename1);
     % condition 1 second round for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
     dummy2 = load(filename2);
     % append data of the two rounds 
-    dummy3 = ft_appenddata([], dummy.data_finaltestcond1, dummy2.data_cond1);
+    dummy3 = ft_appenddata([], dummy.data_cond12, dummy2.data_cond12);
     % manually appending data
     %dummy2.data_cond1.trial = [dummy.data_finaltestcond1.trial, dummy2.data_cond1.trial];
     %dummy2.data_cond1.time = [dummy.data_finaltestcond1.time, dummy2.data_cond1.time];
@@ -41,13 +41,13 @@ for i = 1:length(subjects)
     clear dummy3
     
     % condition 2 first round for each participant
-    filename3 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf\', num2str(subjects(i)), '_data_clean_cond2');
+    filename3 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
     dummy4 = load(filename3);
     % condition 2 second round for each participant
-    filename4 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2');
+    filename4 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
     dummy5 = load(filename4);
     % append data of the two rounds 
-    dummy6 = ft_appenddata([], dummy4.data_finaltestcond2, dummy5.data_cond2);
+    dummy6 = ft_appenddata([], dummy4.data_cond22, dummy5.data_cond22);
     % manual appending
     %dummy.data_cond2.trial = [dummy.data_cond2.trial, dummy2.data_finaltestcond2.trial];
     %dummy.data_cond2.time = [dummy.data_cond2.time, dummy2.data_finaltestcond2.time];
@@ -189,8 +189,8 @@ cfg                 = [];
 %cfg.maskparameter  = 'mask';
 %cfg.maskalpha      = 0.2;
 cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
-cfg.zlim            = 'maxabs'; %[-.18 .18]; %
-cfg.masknans        = 'yes';
+%cfg.zlim            = 'maxabs'; %[-.18 .18]; %
+%cfg.masknans        = 'yes';
 figure 
 ft_singleplotTFR(cfg, effect2);
 %ft_singleplotTFR(cfg, stat);
@@ -212,3 +212,10 @@ cfg.layout          = 'EEG1010.lay';
 cfg.parameter       = 'stat';
 figure
 ft_topoplotTFR(cfg, stat);
+
+cfg = [];
+cfg.alpha  = 0.025;
+cfg.parameter = 'stat';
+cfg.zlim   = [-4 4];
+cfg.layout = 'EEG1010.lay';
+ft_clusterplot(cfg, stat);
