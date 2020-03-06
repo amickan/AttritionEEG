@@ -1,33 +1,65 @@
-%%% Interference phase - ERPs - Permutation test for median split
+%%%%% Interference ERPs - testing for an interaction between rounds of picture naming %%%
+%% load data 
+subjects        = [301:302, 304:308, 310:326, 328, 329];     % subjects that should be included in grand average
+cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\');    % directory with all preprocessed files 
 
-%% Loading data 
+% settings for data loading
+cfg             = [];
+cfg.keeptrials  = 'no';
+cfg.baseline    =[-0.2 0];                  
 
-subjects = [301:302, 304:308, 310:326, 328, 329]; % subjects that should be included in grand average
-cd('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\'); % directory with all preprocessed files 
-
-% some global settings for plotting later on 
-set(groot,'DefaultFigureColormap',jet);
-
-cfg = [];
-cfg.baseline = [-0.2 0];
-
-Condition1 = cell(1,length(subjects));
-Condition2 = cell(1,length(subjects));
+% initiate empty cell arrays per condition for subject averages 
+Condition1      = cell(1,length(subjects));
+Condition2      = cell(1,length(subjects));
+Condition12     = cell(1,length(subjects));
+Condition22     = cell(1,length(subjects));
 
 for i = 1:length(subjects)
-    % condition 1 for each participant
+    % condition 1 first half for each participant
     filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_high_1');
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.up1);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
-    % condition 2 for each participant
+    % condition 2 first half for each participant
     filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic1_mediansplit_low_1');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.low1);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
     clear dummy2
+    % condition 1 second half for each participan
+    filename12 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_mediansplit_high_1');
+    dummy12 = load(filename12);
+    Condition12{i} = ft_timelockanalysis(cfg, dummy12.up4);
+    Condition12{i} = ft_timelockbaseline(cfg, Condition12{i});
+    clear dummy12
+    % condition 2 second half for each participant
+    filename22 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData\', num2str(subjects(i)), '_Pic4_mediansplit_low_1');
+    dummy22 = load(filename22);
+    Condition22{i} = ft_timelockanalysis(cfg, dummy22.low4);
+    Condition22{i} = ft_timelockbaseline(cfg, Condition22{i});
+    clear dummy22
 end
+         
+%% calculate difference waves for each round (i.e. half of the data)
+for i=1:length(Condition1)
+    DiffRound1{i}       = Condition1{i};
+    DiffRound1{i}.avg   = Condition1{i}.avg - Condition2{i}.avg;
+end
+
+for i=1:length(Condition12)
+    DiffRound2{i}       = Condition12{i};
+    DiffRound2{i}.avg   = Condition12{i}.avg - Condition22{i}.avg;
+end
+
+% clean up to reduce memory load
+clear Condition1 Condition2 Condition12 Condition22
+
+%% grand average the difference waves
+cfg                     = [];
+cfg.keepindividual      = 'yes';                                            % this is necessary for permutation test
+GAdiffRound2            = ft_timelockgrandaverage(cfg, DiffRound2{:});
+GAdiffRound1            = ft_timelockgrandaverage(cfg, DiffRound1{:});
 
 %% Permutation test 
 
@@ -37,14 +69,16 @@ cfg_neighb.method           = 'triangulation';
 cfg_neighb.channel          = 'EEG';
 cfg_neighb.layout           = 'EEG1010.lay';
 cfg_neighb.feedback         = 'yes';
-%cfg_neighb.neighbourdist    = 0.15; % higher number: more is linked!
-neighbours                  = ft_prepare_neighbours(cfg_neighb, Condition1{1});
+cfg_neighb.neighbourdist    = 0.15;                                         % higher number: more is linked!
+neighbours                  = ft_prepare_neighbours(cfg_neighb, DiffRound2{1});
 
-% Stats settings
+clear DiffRound2 DiffRound1
+
+% Stats setting
 cfg                     = [];
 cfg.method              = 'montecarlo';       
 cfg.channel             = {'EEG'};     
-cfg.latency             = [0.35 1]; %[0.2 0.35];      % [0.35 1];
+cfg.latency             = [0.35 1]; %[0.2 0.35];                       %[0.2 0.35];      
 cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
 cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding
@@ -53,12 +87,12 @@ cfg.clusterstatistic    = 'maxsum';                         % test statistic tha
 cfg.neighbours          = neighbours;   
 cfg.tail                = 0;                                % -1, 1 or 0 (default = 0); one-sided or two-sided test
 cfg.clustertail         = 0;
-cfg.alpha               = 0.05;                            % alpha level of the permutation test
+cfg.alpha               = 0.05;                             % alpha level of the permutation test
 cfg.numrandomization    = 2000;                              % number of draws from the permutation distribution
 cfg.correcttail         = 'prob';
 
 % Design matrix - within subject design
-subj                    = length(subjects);                % number of participants excluding the ones with too few trials
+subj                    = length(subjects);                 % number of participants excluding the ones with too few trials
 design                  = zeros(2,2*subj);
 for i = 1:subj
   design(1,i) = i;
@@ -73,22 +107,9 @@ cfg.design              = design;                           % design matrix EDIT
 cfg.uvar                = 1;                                % unit variable
 cfg.ivar                = 2;                                % number or list with indices indicating the independent variable(s) EDIT FOR WITHIN
 
-[stat]                  = ft_timelockstatistics(cfg, Condition1{:}, Condition2{:});
+[stat]                  = ft_timelockstatistics(cfg, GAdiffRound1, GAdiffRound2);
 
-%% Permutation test results 
-
-% calculate difference between conditions per subject 
-cfg                 = [];
-cfg.operation       = 'subtract';
-cfg.parameter       = 'avg';
-raweffect           = cell(1,length(subjects));
-for i = 1:length(subjects)
-    raweffect{i} = ft_math(cfg,Condition1{i},Condition2{i});
-end
-
-% grand average over participants difference scores
-cfg                 = [];
-raw                 = ft_timelockgrandaverage(cfg, raweffect{:});
+%% Permutation test evaluation
 
 % get relevant (significant) values
 if isempty(stat.posclusters) == 0
@@ -101,6 +122,7 @@ if isempty(stat.posclusters) == 0
     disp(['there are ', num2str(numberofsignclusters), ' significant positive clusters']);
 else
     numberofsignclusters = 0;
+    disp('there are no significant positive clusters');
 end
 
 if isempty(stat.negclusters) == 0
@@ -113,6 +135,7 @@ if isempty(stat.negclusters) == 0
     disp(['there are ', num2str(numberofsignclustersneg), ' significant negative clusters']);
 else 
     numberofsignclustersneg = 0;
+    disp('there are no significant negative clusters');
 end
 
 if numberofsignclusters > 0
@@ -124,21 +147,10 @@ if numberofsignclusters > 0
         % pos_int2 = all(pos2(:, min(foundy):max(foundy)),2); % no channels are significant over the total sign. time period....
         % find(pos_int2) % see upper comment
         starttime = stat.time(min(foundy));
-        endtime = stat.time(max(foundy));
-        
-        %%% Topoplot for the cluster 
-        figure;
-        %colormap(redblue);
-        %colorbar('eastoutside');
-        cfg = [];
-        cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-3 3];
-        cfg.layout = 'EEG1010.lay';
-        ft_topoplotER(cfg, raw);
-        
+        endtime = stat.time(max(foundy));       
         disp(['Positive cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
-        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     end
 end
 
@@ -152,19 +164,8 @@ if numberofsignclustersneg > 0
         % find(pos_int2) % see upper comment
         starttime = stat.time(min(foundy));
         endtime = stat.time(max(foundy));
-        
-        %%% Topoplot for the cluster 
-        figure;
-        %colormap(redblue);
-        colorbar('eastoutside');
-        cfg = [];
-        cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-2 2];
-        cfg.layout = 'EEG1010.lay';
-        ft_topoplotER(cfg, raw);
-        
         disp(['Negative cluster ', num2str(i), ' starts at ', num2str(starttime), ' s and ends at ', num2str(endtime), ' s'])
         disp(['the following ', num2str(length(unique(foundx'))),' channels are included in this significant cluster:  ', num2str(unique(foundx'))])
-        disp(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'])
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     end
 end

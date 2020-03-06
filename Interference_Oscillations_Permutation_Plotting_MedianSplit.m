@@ -13,7 +13,7 @@ cfg.taper        = 'hanning';
 cfg.pad          = 'nextpow2'; 
 cfg.foi          = 2:1:30;                         % analysis 4 to 30 Hz in steps of 1 Hz 
 cfg.t_ftimwin    = 3 ./ cfg.foi;                   % ones(length(cfg.foi),1).*0.5;   % length of time window = 0.5 sec
-cfg.toi          = -0.5:0.05:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
+cfg.toi          = -0.5:0.01:1.5;                  % time window "slides" from -0.5 to 1.5 sec in steps of 0.05 sec (50 ms)
 
 Condition1 = cell(1,length(subjects));
 Condition2 = cell(1,length(subjects));
@@ -62,7 +62,7 @@ cfg = [];
 cfg.channel          = {'EEG'};                     % only EEG channels in analysis, possibly restrict even more, i.e. exclude bad channels
 cfg.latency          = [0.5 1];                       % time window in seconds
 cfg.method           = 'montecarlo';
-cfg.frequency        = [4 10];                      % look only at frequency between 4 and 10 Hz, or 'all';
+cfg.frequency        = [4 7];                      % look only at frequency between 4 and 10 Hz, or 'all';
 cfg.statistic        = 'ft_statfun_depsamplesT';    % for a simple dependent t-test, other tests can be specified here
 cfg.correctm         = 'cluster';
 cfg.clusteralpha     = 0.05;
@@ -71,7 +71,7 @@ cfg.minnbchan        = 2;
 cfg.tail             = 0;                           % for a two-tailed test, 1 or -1 for one-tailed tests
 cfg.clustertail      = 0;
 cfg.alpha            = 0.05;
-cfg.numrandomization = 1000;
+cfg.numrandomization = 2000;
 cfg.correcttail      = 'prob';
 cfg.neighbours       = neighbours;
 
@@ -156,9 +156,9 @@ cfg                 = [];
 %cfg.parameter      = 'stat';
 %cfg.maskparameter  = 'mask';
 %cfg.maskalpha      = 0.2;
-cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
-cfg.zlim            = 'maxabs'; %[-.18 .18]; %
-cfg.masknans        = 'yes';
+cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'C2', 'FC1', 'Fz', 'F1'};	
+cfg.zlim            = [-.2 .2]; %
+%cfg.masknans        = 'yes';
 figure 
 ft_singleplotTFR(cfg, effect2);
 %ft_singleplotTFR(cfg, stat);

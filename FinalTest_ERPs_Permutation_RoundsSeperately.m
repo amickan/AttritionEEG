@@ -16,16 +16,16 @@ Condition2 = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
-    %filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
+    %filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
     dummy = load(filename1);
     Condition1{i} = ft_timelockanalysis(cfg, dummy.data_cond12);
     Condition1{i} = ft_timelockbaseline(cfg, Condition1{i});
     clear dummy
     
     % condition 2 for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
-    %filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
+    %filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
     dummy2 = load(filename2);
     Condition2{i} = ft_timelockanalysis(cfg, dummy2.data_cond22);
     Condition2{i} = ft_timelockbaseline(cfg, Condition2{i});
@@ -135,7 +135,7 @@ if numberofsignclusterspos > 0
         colorbar('eastoutside');
         cfg = [];
         cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-1.8 1.8];
+        cfg.zlim = [-2 2];
         cfg.layout = 'EEG1010.lay';
         ft_topoplotER(cfg, raw);
         
@@ -159,11 +159,11 @@ if numberofsignclustersneg > 0
         
         %%% Topoplot for the cluster 
         figure;
-        colormap(redblue);
+        %colormap(redblue);
         colorbar('eastoutside');
         cfg = [];
         cfg.xlim=[starttime endtime];  % in seconds!
-        cfg.zlim = [-1.8 1.8];
+        cfg.zlim = [-2 2];
         cfg.layout = 'EEG1010.lay';
         ft_topoplotER(cfg, raw);
         

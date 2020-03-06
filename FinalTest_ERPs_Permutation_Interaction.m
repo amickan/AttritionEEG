@@ -78,7 +78,7 @@ clear DiffRound2 DiffRound1
 cfg                     = [];
 cfg.method              = 'montecarlo';       
 cfg.channel             = {'EEG'};     
-cfg.latency             = [0.2 0.35]; %[0.35 1]; %[0.2 0.35];                       %[0.2 0.35];      
+cfg.latency             = [0.35 1]; %[0.2 0.35];                       %[0.2 0.35];      
 cfg.statistic           = 'ft_statfun_depsamplesT';         % within design
 cfg.correctm            = 'cluster';
 cfg.clusteralpha        = 0.05;                             % alpha level of the sample-specific test statistic that will be used for thresholding

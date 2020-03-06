@@ -226,15 +226,15 @@ for (i in 1:length(A)){
   
 
   # safe the new Final test file for the NewMarker.m script
-  #setwd(wd1)
-  #outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
-  #write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
+  setwd(wd1)
+  outfile = paste(pNumber,"Finaltest_new.txt",sep="_")
+  write.table(currentFile2, outfile, quote = F, row.names = F, col.names = T, sep = "\t")
   
   # safe the file with the relevant behavioral information as text (for preprocessing script)
   # columns as follows: TrialNr, Condition, VoiceOnset, TypeError, Not learned in Spanish, unknown in English, known in Italian, Read in
-  #setwd(wd1)
-  #outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
-  #write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
+  setwd(wd1)
+  outfile2 = paste(pNumber,"BehavMatrixFinalTest.txt",sep="_")
+  write.table(behav, outfile2, quote = F, row.names = F, col.names = F, sep = "\t")
   
   #print("###")
   #print(pNumber)
@@ -269,6 +269,10 @@ post$Ratio <- (post$PhonCorr/post$Total)*100
 # subset to only the first round of Final test
 post1 <- post[post$Trial_nr<71,]
 post2 <- post[post$Trial_nr>70,]
+sd(learn[,2])
+
+##### Learning success ####
+learn <- (100-tapply(pre$Error, list(pre$Subject_nr, pre$Condition), mean)*100)
 
 ########## Plots with GGplot ###########
 
@@ -277,93 +281,105 @@ post$ErrorRate <- 100-post$Ratio
 # histogram of results 
 hist(post$Ratio)
 
-ddply(post, .(Condition, Subject_nr), 
+ddply(post, .(Condition, Subject_nr, Block), 
       summarise, N=length(ErrorRate), 
       mean   = mean(ErrorRate, na.rm = TRUE), 
       sem = sd(ErrorRate, na.rm = TRUE)/sqrt(N)) -> aggregatedRatio
 
-aggregated_means_ratio <- ddply(post, .(Condition), 
+aggregated_means_ratio <- ddply(post, .(Condition, Block), 
                                 summarise,
                                 condition_mean = mean(ErrorRate,na.rm = T),
                                 condition_sem = sd(ErrorRate,na.rm = T)/sqrt(length(ErrorRate[!is.na(ErrorRate)])))
 
-aggregatedRatio <- merge(aggregatedRatio, aggregated_means_ratio, by = c("Condition"))
+aggregatedRatio <- merge(aggregatedRatio, aggregated_means_ratio, by = c("Condition", "Block"))
 
-lineplot <- ggplot(aggregatedRatio, aes(y = mean, x = Condition, group = Subject_nr))
-lineplot + geom_point(color="darkgrey") +
-  geom_line(color="darkgrey") +
-  geom_point(aes(y = condition_mean,
-                 color = Condition), color="black") +
-  geom_text(aes(label=Subject_nr)) +
-  geom_line(aes(y = condition_mean,color="red")) +
-  geom_errorbar(aes(ymin=condition_mean-condition_sem,
-                    ymax=condition_mean+condition_sem,
-                    color = "red",
-                    na.rm = T),
-                    width = 0.5) +
-  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
-  scale_x_discrete(labels=c("Interference", "No interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Percentage correctly recalled words in Spanish") +
- # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +
-  theme_bw()
+aggregated_means_ratio$BlockLabel <- factor(aggregated_means_ratio$Block,
+                                                           levels=1:2,
+                                                           labels=c("Block 1","Block 2"))
+
+#lineplot <- ggplot(aggregatedRatio, aes(y = mean, x = Condition, group = Subject_nr))
+#lineplot + geom_point(color="darkgrey") +
+#  geom_line(color="darkgrey") +
+#  geom_point(aes(y = condition_mean,
+#                 color = Condition), color="black") +
+#  geom_text(aes(label=Subject_nr)) +
+#  geom_line(aes(y = condition_mean,color="red")) +
+#  geom_errorbar(aes(ymin=condition_mean-condition_sem,
+#                    ymax=condition_mean+condition_sem,
+#                    color = "red",
+#                    na.rm = T),
+#                    width = 0.5) +
+#  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
+#  scale_x_discrete(labels=c("Interference", "No interference"), breaks = 1:2, expand = c(0.1,0.1)) +
+#  ylab("Percentage correctly recalled words in Spanish") +
+ # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +#
+#  theme_bw(
+  
+#  )
 
 setwd("U:/PhD/EXPERIMENT 2 - EEG")
 #png("Accuracy.png", width = 4.2, height = 4, pointsize = 4, units = "in", res= 1200)
 #par(cex.axis = 2, cex.lab = 2)
-barplot <- ggplot(aggregated_means_ratio, aes(y = condition_mean, x = Condition, fill = Condition))
+barplot <- ggplot(aggregated_means_ratio, aes(y = condition_mean, x = Condition, fill = Condition, group = BlockLabel))
 barplot + geom_bar(stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin=condition_mean-condition_sem,
                     ymax=condition_mean+condition_sem),
-                width = 0.5, position=position_dodge(0.9)) +
+                width = 0.5) +
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
-  coord_cartesian(ylim=c(0,3)) +
-  scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Error rate (% incorrectly recalled phonemes) in Italian") +
+  coord_cartesian(ylim=c(0,4)) +
+  facet_wrap(~BlockLabel) +
+  scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2) +
+  ylab("Error rate (% incorrectly recalled phonemes per target word) in Italian") +
   scale_fill_grey(labels=c("Interference","No Interference")) +
   theme_bw()
 #ggsave("Accuracy.png", width = 12, height = 8, units = "cm", dpi = 1200)
 
 ### Plot for naming latencies ####
 post$RT_plot <- post$RT_new-2000
-ddply(post, .(Condition, Subject_nr), 
+ddply(post, .(Condition, Subject_nr, Block), 
       summarise, N=length(RT_plot), 
       mean   = mean(RT_plot, na.rm = TRUE), 
       sem = sd(RT_plot, na.rm = TRUE)/sqrt(N)) -> aggregatedRT
 
-aggregated_means_rt <- ddply(post, .(Condition), 
+aggregated_means_rt <- ddply(post, .(Condition, Block), 
                                 summarise,
                                 condition_mean = mean(RT_plot,na.rm = T),
                                 condition_sem = sd(RT_plot,na.rm = T)/sqrt(length(RT_plot[!is.na(RT_plot)])))
 
-aggregatedRT <- merge(aggregatedRT, aggregated_means_rt, by = c("Condition"))
+aggregatedRT <- merge(aggregatedRT, aggregated_means_rt, by = c("Condition", "Block"))
 
-lineplot <- ggplot(aggregatedRT, aes(y = mean, x = Condition, group = Subject_nr))
-lineplot + geom_point(color="darkgrey") +
-  geom_line(color="darkgrey") +
-  geom_point(aes(y = condition_mean,
-                 color = Condition), color="black") +
-  geom_text(aes(label=Subject_nr)) +
-  geom_line(aes(y = condition_mean,color="red")) +
-  geom_errorbar(aes(ymin=condition_mean-condition_sem,
-                    ymax=condition_mean+condition_sem,
-                    color = "red",
-                    na.rm = T),
-                width = 0.5) +
-  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
-  scale_x_discrete(labels=c("Interference", "No interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Percentage correctly recalled words in Spanish") +
-  # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +
-  theme_bw()
+aggregated_means_rt$BlockLabel <- factor(aggregated_means_rt$Block,
+                                            levels=1:2,
+                                            labels=c("Block 1","Block 2"))
 
-barplot <- ggplot(aggregated_means_rt, aes(y = condition_mean, x = Condition, fill = Condition))
+#lineplot <- ggplot(aggregatedRT, aes(y = mean, x = Condition, group = Subject_nr))
+#lineplot + geom_point(color="darkgrey") +
+#  geom_line(color="darkgrey") +
+#  geom_point(aes(y = condition_mean,
+#                 color = Condition), color="black") +
+#  geom_text(aes(label=Subject_nr)) +
+#  geom_line(aes(y = condition_mean,color="red")) +
+#  geom_errorbar(aes(ymin=condition_mean-condition_sem,
+#                    ymax=condition_mean+condition_sem,
+#                    color = "red",
+#                    na.rm = T),
+#                width = 0.5) +
+#  theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
+#  scale_x_discrete(labels=c("Interference", "No interference"), breaks = 1:2, expand = c(0.1,0.1)) +
+#  ylab("Percentage correctly recalled words in Spanish") +
+#  # scale_color_manual(guide=F, "Frequency Condition", values=c("dodgerblue4","firebrick"),labels=c("High","Low")) +
+#  theme_bw()
+
+barplot <- ggplot(aggregated_means_rt, aes(y = condition_mean, x = Condition, fill = Condition, group = BlockLabel))
 barplot + geom_bar(stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin=condition_mean-condition_sem,
                     ymax=condition_mean+condition_sem),
                 width = 0.5, position=position_dodge(0.9)) +
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20)) + 
-  coord_cartesian(ylim=c(500,1000)) +
-  scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2, expand = c(0.1,0.1)) +
-  ylab("Naming latencies in Italian (in ms)") +
+  coord_cartesian(ylim=c(0,1100)) +
+  facet_wrap(~BlockLabel) +
+  scale_x_discrete(labels=c("Interference", "No Interference"), breaks = 1:2) +
+  ylab("Delayed naming latencies in Italian (in ms)") +
   scale_fill_grey(labels=c("Interference","No Interference")) +
   theme_bw()
 #ggsave("Accuracy.png", width = 12, height = 8, units = "cm", dpi = 1200)
@@ -385,6 +401,7 @@ post$CorrPer <- round(post$PhonCorrect/post$Total,2)
 post$Corr <- round(post$CorrPer*post$OrigLen,0)
 #post$Corr <- round(post$CorrPer*post$PhonCorrect,0)
 post$Incorr <- post$OrigLen-post$Corr
+post$Ratio <- (post$Corr/post$OrigLen)*100
 
 # setting contrasts to the mean of each condition 
 contrasts(post$Condition) <- c(0.5,-0.5)
@@ -397,7 +414,7 @@ post$BlockN <- (as.numeric(post$Block)-1)-0.5
 ###### Accuracy after interference #####
 
 ## Full model with maximal random effects structure
-modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = "binomial", control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelfull <- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = "binomial", control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 summary(modelfull)
 # the model converges with the maximal justifyable random effects structure, and none of the random effects are highly correlated with each other, so we leave it this complex 
 # no comparisons needed, you report the beta weights from this model in a table in your paper
@@ -424,15 +441,15 @@ summary(anova_ratio)
 ## Model reporting - fullest model above
 # It is best to report Chi-square p-values for each of the effects serpately 
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelCondition<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelCondition)
 # The chi-suare p-value from the Anova table is the p-value for the main effect of Condition. This p-value is slightly higher than the one from the model output itself because the distribution against which it is calcualted is different (chi-square vs z-distribution)
 # Second, let's take out the main effect for Block
-modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelBlock<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelBlock)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
+modelInteraction<- glmer(cbind(Corr, Incorr) ~ ConditionN*BlockN -ConditionN:BlockN + (1|Item) + (1+ConditionN|Subject_nr), family = binomial, control=glmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)), data = post)
 anova(modelfull, modelInteraction)
 #IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
@@ -446,17 +463,19 @@ colnames(aggRT) <- c("Subject_nr", "Condition", "Block", "RT")
 anova_rt <- aov(RT ~ Condition*Block, data = aggRT)
 summary(anova_rt)
 
+## t-tests for follow
+
 ## Full model on log transformed data 
 # Full model with maximum random effects structure 
 # We take the log of the reaction times because the distribution is very non-normal, and we subtract 2000ms because that's the lowest value there is currently (due to 2s delay), log transform works better if there are values close to 0 and between 0-1
-modelRT2full <- lmer(log(RT_new-2000) ~ ConditionN*BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2full <- lmer(log(RT_new-2000) ~ ConditionN*BlockN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 summary(modelRT2full)
 # we continue simplifying the random effects structure, overall, the random effecst don't take out almost any variation, we leave in the simplest, intercept only
 # both main effects are significant, the interaction reached marginal significance
 
 ### Seperate models for each round (just out of curiosity)
 # Round 1
-modelRT2round1 <- lmer(log(RT_new-2000) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
+modelRT2round1 <- lmer(log(RT_new-2000) ~ ConditionN + (1|Item) + (1|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
 summary(modelRT2round1)
 # Round 2
 modelRT2round2 <- lmer(log(RT_new-2000) ~ ConditionN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
@@ -465,18 +484,24 @@ summary(modelRT2round2)
 ## Model reporting - fullest model above
 # Same as above
 # First let's take out the main effect for Condition (-Condition below in the code)
-modelRT2Condition <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Condition <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - ConditionN + (1|Item) + (1|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Condition)
 # Second, let's take out the main effect for Block
-modelRT2Block <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Block <- lmer(log(RT_new-2000) ~ ConditionN*BlockN - BlockN + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Block)
 # The chi-square p-value from the Anova table is the p-value for the main effect of Round/Block
 # Finally, let's take out the interaction
-modelRT2Interaction <- lmer(log(RT_new-2000) ~ ConditionN + BlockN + (1|Item) + (1+BlockN*ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
+modelRT2Interaction <- lmer(log(RT_new-2000) ~ ConditionN + BlockN + (1|Item) + (1|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post)
 anova(modelRT2full, modelRT2Interaction)
 # IMPORTANT: the intercept in these models is always the grand mean: the effect over all conditions: mean over the mean of each cell. cells being: Interference condition for Block 1, Interference Block 2, No interference Block 1, No interference Block 2
 # So now it is not correct anymore what you say in your methods section: the intercept DOES NOT reflect the no interference condition any longer, it represents the mean of both conditions over both blocks!!! 
 # The p-values you get out of these comparisons are what you report in the paper and in the table along with the estimates.  
+
+modelRT2round1Cond <- lmer(log(RT_new-2000) ~ 1 + (1|Item) + (1|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==1,])
+anova(modelRT2round1, modelRT2round1Cond)
+
+modelRT2round2Cond <- lmer(log(RT_new-2000) ~ 1 + (1|Item) + (1+ConditionN|Subject_nr), control=lmerControl(optimizer="bobyqa", optCtrl = list(maxfun = 100000)),data = post[post$Block==2,])
+anova(modelRT2round2, modelRT2round2Cond)
 
 ### Forgetting effect ####
 # difference between error rates in interference and no interfernce condition

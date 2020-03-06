@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "1942195772",
+    "hash" : "1702919318",
     "id" : "F3EB1036",
-    "lastKnownWriteTime" : 1582302203,
-    "last_content_update" : 1582302203443,
+    "lastKnownWriteTime" : 1582716732,
+    "last_content_update" : 1582716732,
     "path" : "U:/PhD/EXPERIMENT 2 - EEG/EEG-analysis/BehavioralAnalysis.R",
     "project_path" : "BehavioralAnalysis.R",
     "properties" : {
-        "cursorPosition" : "688,2",
-        "scrollLine" : "679"
+        "cursorPosition" : "55,36",
+        "scrollLine" : "34"
     },
     "relative_order" : 3,
     "source_on_save" : false,

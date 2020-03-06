@@ -24,10 +24,10 @@ Condition2      = cell(1,length(subjects));
 
 for i = 1:length(subjects)
     % condition 1 first round for each participant
-    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors');
+    filename1 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond1_witherrors_long');
     dummy = load(filename1);
     % condition 1 second round for each participant
-    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors');
+    filename2 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond1_witherrors_long');
     dummy2 = load(filename2);
     % append data of the two rounds 
     dummy3 = ft_appenddata([], dummy.data_cond12, dummy2.data_cond12);
@@ -41,10 +41,10 @@ for i = 1:length(subjects)
     clear dummy3
     
     % condition 2 first round for each participant
-    filename3 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors');
+    filename3 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_firsthalf_new\', num2str(subjects(i)), '_data_clean_1_cond2_witherrors_long');
     dummy4 = load(filename3);
     % condition 2 second round for each participant
-    filename4 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors');
+    filename4 = strcat('\\cnas.ru.nl\wrkgrp\STD-Back-Up-Exp2-EEG\PreprocessedData_secondhalf\', num2str(subjects(i)), '_data_clean_2_cond2_witherrors_long');
     dummy5 = load(filename4);
     % append data of the two rounds 
     dummy6 = ft_appenddata([], dummy4.data_cond22, dummy5.data_cond22);
@@ -56,6 +56,8 @@ for i = 1:length(subjects)
     clear dummy4
     clear dummy5
     clear dummy6
+    
+    disp(subjects(i));
 end
 
 %% Calculate the relative differences between conditions per subject 
@@ -185,24 +187,25 @@ effect2.freq = round(effect.freq);  % to circumvent plotting problem with newest
 
 % plot the relative difference between conditions
 cfg                 = [];
-%cfg.parameter      = 'stat';
-%cfg.maskparameter  = 'mask';
-%cfg.maskalpha      = 0.2;
-cfg.channel         = {'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
-%cfg.zlim            = 'maxabs'; %[-.18 .18]; %
+cfg.parameter      = 'stat';
+cfg.maskparameter  = 'mask';
+cfg.maskalpha      = 0;
+cfg.channel         = {'Fz','F1', 'F2' ,'Cz', 'FCz', 'CPz', 'Pz', 'CP1', 'CP2', 'P1', 'P2', 'C1', 'C2', 'FC1', 'FC2'};	
+cfg.zlim            = [-3 3];
+%cfg.zlim            = [-.18 .18]; %
 %cfg.masknans        = 'yes';
 figure 
-ft_singleplotTFR(cfg, effect2);
-%ft_singleplotTFR(cfg, stat);
+%ft_singleplotTFR(cfg, effect2);
+ft_singleplotTFR(cfg, stat);
 
 % plotting the topography 
 cfg                 = [];
 cfg.xlim            = [0.51 1];
 cfg.ylim            = [4 7];
-cfg.zlim            = 'maxabs';% [-.1 .1];
+cfg.zlim            = 'maxabs'; %[-.18 .18];
 cfg.layout          = 'EEG1010.lay';
 figure
-ft_topoplotTFR(cfg, effect);
+ft_topoplotTFR(cfg, effect2);
 
 cfg                 = [];
 cfg.xlim            = [0.51 1];
@@ -216,6 +219,28 @@ ft_topoplotTFR(cfg, stat);
 cfg = [];
 cfg.alpha  = 0.025;
 cfg.parameter = 'stat';
-cfg.zlim   = [-4 4];
+%cfg.zlim   = [-4 4];
 cfg.layout = 'EEG1010.lay';
 ft_clusterplot(cfg, stat);
+
+%% plot time course of theta power for both Conditions 
+cfg = [];
+cfg.keepindividual='no';
+cond1 = ft_freqgrandaverage(cfg, Condition1{:});
+cond2 = ft_freqgrandaverage(cfg, Condition2{:});
+
+% calculate mean power over representative electrodes and 4-7 Hz
+cond1.data = cond1.powspctrm([25,54,50,49,41,39,31,13,12,7,19,22,23,24,40],[4,5,6,7],:);
+cond1.avg = mean(cond1.data, [1,2]);
+cond2.data = cond2.powspctrm([25,54,50,49,41,39,31,13,12,7,19,22,23,24,40],[4,5,6,7],:);
+cond2.avg = mean(cond2.data, [1,2]);
+cond1.avgs = squeeze(cond1.avg);
+cond2.avgs = squeeze(cond2.avg);
+
+figure;
+hold on;
+plot((cond1.time)*1000, cond1.avgs,  'r', (cond2.time)*1000, cond2.avgs, 'k')
+xlabel('Time (ms)');
+ylabel('Absolute power (uV^2)');
+ylim([8 15]);
+xlim([0 1000]);
